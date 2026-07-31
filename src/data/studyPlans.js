@@ -1,0 +1,80 @@
+export const STUDY_PLANS = {
+  'crash': {
+    id: 'crash',
+    name: 'Crash Course',
+    emoji: '⚡',
+    duration: 1,
+    durationLabel: '1 Day',
+    topicsPerDay: 131,
+    description: 'Speed-run through all concepts. Summary-only mode. Perfect for last-minute revision.',
+    features: ['Summary reading', 'Key points only', 'No deep dives'],
+    skipCode: true,
+    skipQuiz: false,
+    revisionCycles: 0,
+    mockInterviews: 0,
+  },
+  'sprint': {
+    id: 'sprint',
+    name: 'Sprint Mode',
+    emoji: '🔥',
+    duration: 10,
+    durationLabel: '10 Days',
+    topicsPerDay: 13,
+    description: 'Intensive 10-day bootcamp. Cover all tracks with focused practice.',
+    features: ['Full lessons', 'Code examples', 'Quick quizzes', 'Key visualizers'],
+    skipCode: false,
+    skipQuiz: false,
+    revisionCycles: 1,
+    mockInterviews: 1,
+  },
+  'standard': {
+    id: 'standard',
+    name: 'Standard Plan',
+    emoji: '📚',
+    duration: 30,
+    durationLabel: '1 Month',
+    topicsPerDay: 5,
+    description: 'Balanced month-long preparation. Full lessons with practice and revision.',
+    features: ['Full lessons', 'Code practice', 'Quizzes', 'Visualizers', 'Weekly revision'],
+    skipCode: false,
+    skipQuiz: false,
+    revisionCycles: 2,
+    mockInterviews: 2,
+  },
+  'thorough': {
+    id: 'thorough',
+    name: 'Thorough Prep',
+    emoji: '🎯',
+    duration: 180,
+    durationLabel: '6 Months',
+    topicsPerDay: 1,
+    description: 'Deep preparation with spaced repetition, mock interviews, and mastery tracking.',
+    features: ['Deep lessons', 'Full code tracing', 'Spaced repetition', 'Mock interviews', 'Notes'],
+    skipCode: false,
+    skipQuiz: false,
+    revisionCycles: 4,
+    mockInterviews: 6,
+  },
+  'mastery': {
+    id: 'mastery',
+    name: 'Mastery Path',
+    emoji: '🏆',
+    duration: 365,
+    durationLabel: '1 Year',
+    topicsPerDay: 0.5,
+    description: 'Ultimate mastery. Deep practice every concept, weekly mocks, multiple revision cycles.',
+    features: ['Deep lessons', 'Practice problems', 'Weekly mocks', 'Spaced repetition', 'Portfolio building'],
+    skipCode: false,
+    skipQuiz: false,
+    revisionCycles: 6,
+    mockInterviews: 12,
+  },
+};
+
+export function generateDailySchedule(planId, allTopics, dayNumber) {
+  const plan = STUDY_PLANS[planId];
+  if (!plan) return allTopics;
+  const perDay = Math.ceil(allTopics.length / plan.duration);
+  const start = (dayNumber - 1) * perDay;
+  return allTopics.slice(start, start + perDay);
+}
