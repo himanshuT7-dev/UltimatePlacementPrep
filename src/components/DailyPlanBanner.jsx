@@ -71,6 +71,12 @@ export default function DailyPlanBanner({ activeTrack, onChangePlan, onSelectTop
             {completedToday.length} / {todaysTopics.length} Completed
           </span>
         </div>
+        
+        {todaysTopics.some(t => t.isOverdue && !progress.completedTopics.includes(t.id)) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: 'var(--r-sm)', color: '#f43f5e', fontSize: '0.8rem', fontWeight: 600, marginBottom: 12 }}>
+            <Flame size={14} /> You have pending tasks from previous days! Complete them to stay on track.
+          </div>
+        )}
         <div
           className="progress-bar-wrap"
           role="progressbar"
@@ -97,12 +103,12 @@ export default function DailyPlanBanner({ activeTrack, onChangePlan, onSelectTop
                     alignItems: 'center', 
                     gap: 6,
                     padding: '6px 12px',
-                    background: isDone ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 255, 255, 0.07)',
-                    border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.35)' : 'rgba(245, 158, 11, 0.3)'}`,
+                    background: isDone ? 'rgba(52, 211, 153, 0.12)' : (topic.isOverdue ? 'rgba(244, 63, 94, 0.08)' : 'rgba(255, 255, 255, 0.07)'),
+                    border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.35)' : (topic.isOverdue ? 'rgba(244, 63, 94, 0.4)' : 'rgba(245, 158, 11, 0.3)')}`,
                     borderRadius: 100,
                     fontSize: '0.75rem',
                     fontWeight: 600,
-                    color: isDone ? '#34d399' : '#f1f5f9',
+                    color: isDone ? '#34d399' : (topic.isOverdue ? '#f43f5e' : '#f1f5f9'),
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}

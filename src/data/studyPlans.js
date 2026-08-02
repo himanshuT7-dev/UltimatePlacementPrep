@@ -1,3 +1,5 @@
+import { TRACKS } from './index';
+
 export const STUDY_PLANS = {
   'crash': {
     id: 'crash',
@@ -100,14 +102,40 @@ export function getCuratedPlanTopics(planId, allTopics = []) {
 }
 
 /**
- * Generates the daily schedule topics for a specific day in the plan.
+ * Generates the daily schedule topics up to the given day in the plan.
+ * Incorporates pending uncompleted topics from past days and marks them as overdue.
  */
-export function generateDailySchedule(planId, allTopics = [], dayNumber = 1) {
+export function generateDailySchedule(planId, allTopics = [], dayNumber = 1, completedTopics = []) {
   const plan = STUDY_PLANS[planId] || STUDY_PLANS.standard;
   const curatedTopics = getCuratedPlanTopics(planId, allTopics);
   
-  const perDay = Math.max(1, Math.ceil(curatedTopics.length / plan.duration));
-  const start = (dayNumber - 1) * perDay;
-  return curatedTopics.slice(start, start + perDay);
-}
+  let scheduledForToday = [];
 
+  TRACKS.forEach(track => {
+    // Extract the curated topics that belong to this specific track
+    const trackCurated = curatedTopics.filter(t => 
+      track.modules?.some(m => m.topics?.some(tp => tp?.id === t.id))
+    );
+
+    if (trackCurated.length === 0) return;
+
+    // Distribute the track's curated topics evenly over the plan duration
+    const perDay = Math.max(1, Math.ceil(trackCurated.length / plan.duration));
+    const startToday = (dayNumber - 1) * perDay;
+    
+    // Topics strictly scheduled for the CURRENT day (Day N)
+    const todayOnly = trackCurated.slice(startToday, startToday + perDay);
+    
+    // Topics strictly scheduled for PAST days (Day 1 to Day N-1)
+    const pastTopics = trackCurated.slice(0, startToday);
+    
+    // Any past topic that is NOT completed is a "pending" overdue task
+    const pendingPast = pastTopics
+      .filter(t => !completedTopics.includes(t.id))
+      .map(t => ({ ...t, isOverdue: true })); // flag them so the UI can warn the user
+
+    scheduledForToday.push(...pendingPast, ...todayOnly);
+  });
+
+  return scheduledForToday;
+}

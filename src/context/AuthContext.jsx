@@ -455,8 +455,8 @@ export const AuthProvider = ({ children }) => {
     if (!progress.studyPlan) return [];
     const allTopics = getAllTopics();
     const dayNumber = getStudyDay();
-    return generateDailySchedule(progress.studyPlan, allTopics, dayNumber);
-  }, [progress.studyPlan, getStudyDay]);
+    return generateDailySchedule(progress.studyPlan, allTopics, dayNumber, progress.completedTopics || []);
+  }, [progress.studyPlan, getStudyDay, progress.completedTopics]);
 
   // Memoize the provider value so consumers only re-render when a consumed value
   // actually changes (functions below are stable via useCallback).
