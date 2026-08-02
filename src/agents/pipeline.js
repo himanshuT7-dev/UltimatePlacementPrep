@@ -13,57 +13,50 @@
  * Each node: { systemPrompt, buildPrompt(state), parseOutput(raw) }
  */
 
-const KEY_STORE = 'upp_founder_key_v1';
 const CACHE_PFX = 'upp_ai_cache_v2_';
 let lastCallMs  = 0;
 const RATE_MS   = 4500;
 
-export const getFounderKey = ()  => localStorage.getItem(KEY_STORE) || import.meta.env.VITE_GEMINI_API_KEY || '';
-export const setFounderKey = (k) => k ? localStorage.setItem(KEY_STORE, k.trim()) : localStorage.removeItem(KEY_STORE);
-
 /* ── Core Gemini call ──────────────────────────────────── */
 const callGemini = async ({ prompt, system = '', json = true, maxTokens = 1500 }) => {
-  const key = getFounderKey();
-  if (!key) throw new Error('No founder API key. Open ⚙ Settings to add your Gemini Pro key.');
-
   const cacheKey = CACHE_PFX + btoa(unescape(encodeURIComponent(prompt + system))).slice(0, 60);
   try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) return json ? JSON.parse(cached) : cached;
+    const c = localStorage.getItem(cacheKey);
+    if (c) return JSON.parse(c);
   } catch {}
 
   const wait = RATE_MS - (Date.now() - lastCallMs);
   if (wait > 0) await new Promise(r => setTimeout(r, wait));
   lastCallMs = Date.now();
 
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.45,
-      maxOutputTokens: maxTokens,
-      ...(json ? { responseMimeType: 'application/json' } : {}),
-    },
-    ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-  };
+  try {
+    const r = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, system, json, model: 'gemini-1.5-pro' })
+    });
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  );
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error || `Server error ${r.status}`);
+    }
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Gemini error ${res.status}`);
+    const data = await r.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    let parsed = text;
+    if (json) {
+      try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch (e) {
+        throw new Error('Failed to parse AI response as JSON.');
+      }
+    }
+
+    try { localStorage.setItem(cacheKey, JSON.stringify(parsed)); } catch {}
+    return parsed;
+  } catch (error) {
+    console.error('Gemini call failed:', error);
+    throw error;
   }
-
-  const data = await res.json();
-  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const output = json
-    ? (() => { try { return JSON.parse(raw.replace(/```json|```/g, '').trim()); } catch { return { error: 'Parse failed', raw }; } })()
-    : raw;
-
-  try { localStorage.setItem(cacheKey, json ? JSON.stringify(output) : output); } catch {}
-  return output;
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -213,19 +206,3 @@ Keep it conversational, warm, and approximately 3-4 sentences. Do not translate 
     }),
 };
 
-/* ── Connection test ──────────────────────────────────── */
-export const testConnection = async (key) => {
-  if (!key) return { ok: false, msg: 'No key provided.' };
-  try {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }], generationConfig: { maxOutputTokens: 5 } }),
-      }
-    );
-    if (!r.ok) { const e = await r.json(); return { ok: false, msg: e.error?.message || 'API rejected key.' }; }
-    return { ok: true, msg: '✓ Gemini Pro connected successfully!' };
-  } catch (e) { return { ok: false, msg: e.message }; }
-};
