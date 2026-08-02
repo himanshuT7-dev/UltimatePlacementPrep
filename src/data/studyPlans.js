@@ -83,22 +83,20 @@ export const STUDY_PLANS = {
 
 const IMPORTANCE_WEIGHTS = { high: 3, medium: 2, standard: 1 };
 
-/**
- * Returns topics curated and sorted by importance weight for a specific study plan.
- */
 export function getCuratedPlanTopics(planId, allTopics = []) {
   const plan = STUDY_PLANS[planId] || STUDY_PLANS.standard;
   if (!allTopics || allTopics.length === 0) return [];
 
-  // Sort topics by importance weight (high > medium > standard)
-  const sortedTopics = [...allTopics].sort((a, b) => {
-    const impA = a.importance || (a.level === 'Beginner' ? 'high' : a.level === 'Intermediate' ? 'medium' : 'standard');
-    const impB = b.importance || (b.level === 'Beginner' ? 'high' : b.level === 'Intermediate' ? 'medium' : 'standard');
-    return (IMPORTANCE_WEIGHTS[impB] || 1) - (IMPORTANCE_WEIGHTS[impA] || 1);
+  // Filter topics by allowed importance while preserving natural track & module order
+  const allowed = new Set(plan.allowedImportance || ['high', 'medium', 'standard']);
+  
+  const filtered = allTopics.filter(t => {
+    const imp = t.importance || (t.level === 'Beginner' ? 'high' : t.level === 'Intermediate' ? 'medium' : 'standard');
+    return allowed.has(imp);
   });
 
-  // Return the curated subset up to targetTopicCount
-  return sortedTopics.slice(0, plan.targetTopicCount || allTopics.length);
+  // Return the curated subset up to targetTopicCount in curriculum order
+  return filtered.slice(0, plan.targetTopicCount || allTopics.length);
 }
 
 /**

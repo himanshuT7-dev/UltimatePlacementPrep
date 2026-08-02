@@ -262,40 +262,50 @@ export default function LessonStepper({
       <div className="step-content anim-fade" style={{ minHeight: 300, display: 'flex', flexDirection: 'column' }}>
         {activeStep === 1 && (
           <div className="anim-fade" style={{ flex: 1 }}>
-            <div className="topic-summary" style={{ fontSize: '1.1rem', marginBottom: 24 }}>
-              <FormatText text={topic.summary} />
-            </div>
-            {nativeText && (
-              <div className="diag-section native" style={{ background: 'rgba(234, 88, 12, 0.05)', border: '1px solid rgba(234, 88, 12, 0.2)', padding: 20, borderRadius: 'var(--r-md)' }}>
-                <div className="diag-label" style={{ justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--amber)' }}><Languages size={15} /> {nativeLang} Explanation</span>
-                    <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: '4px', height: '24px' }}>
-                      <select value={nativeLang} onChange={e => setNativeLang(e.target.value)} style={{ fontSize: '0.75rem', padding: '0 4px', background: 'transparent' }}>
-                        {LANGS.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
-                    </div>
-                    <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: '4px', height: '24px' }}>
-                      <Mic size={12} style={{ color: 'var(--sky)' }} />
-                      <select value={voiceGender} onChange={e => setVoiceGender(e.target.value)} style={{ fontSize: '0.75rem', padding: '0 4px', background: 'transparent' }}>
-                        <option value="Female">Female Voice</option>
-                        <option value="Male">Male Voice</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button
-                    className="btn btn-ghost"
-                    style={{ padding: '4px 10px', fontSize: '0.72rem' }}
-                    onClick={() => toggleAudio(nativeText)}
-                  >
-                    {isSpeaking ? <><VolumeX size={12} /> Stop</> : <><Volume2 size={12} /> Listen</>}
-                  </button>
+            {/* Integrated Language & Voice Toolbar */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(14,19,32,0.85) 100%)',
+              border: '1px solid rgba(245,158,11,0.25)',
+              borderRadius: 'var(--r-md)',
+              padding: '10px 16px',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 12
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--amber)', fontSize: '0.8rem', fontWeight: 700 }}>
+                  <Languages size={15} /> Explanation Language:
+                </span>
+                <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 10px', borderRadius: 9999, border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <select value={nativeLang} onChange={e => setNativeLang(e.target.value)} style={{ fontSize: '0.78rem', fontWeight: 600, padding: '2px 4px', background: 'transparent', color: '#f1f5f9', border: 'none' }}>
+                    {LANGS.map(l => <option key={l} value={l} style={{ background: '#0f172a', color: '#fff' }}>{l}</option>)}
+                  </select>
                 </div>
-                <div style={{ fontSize: '0.95rem' }}>
-                  <FormatText text={nativeText} />
+                <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 10px', borderRadius: 9999, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Mic size={13} style={{ color: 'var(--sky)' }} />
+                  <select value={voiceGender} onChange={e => setVoiceGender(e.target.value)} style={{ fontSize: '0.78rem', fontWeight: 600, padding: '2px 4px', background: 'transparent', color: '#f1f5f9', border: 'none' }}>
+                    <option value="Female" style={{ background: '#0f172a', color: '#fff' }}>Female Voice</option>
+                    <option value="Male" style={{ background: '#0f172a', color: '#fff' }}>Male Voice</option>
+                  </select>
                 </div>
               </div>
-            )}
+
+              <button
+                className="btn btn-amber"
+                style={{ padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, borderRadius: 9999 }}
+                onClick={() => toggleAudio(nativeText || topic.summary)}
+              >
+                {isSpeaking ? <><VolumeX size={14} /> Stop Audio</> : <><Volume2 size={14} /> Listen to Lesson</>}
+              </button>
+            </div>
+
+            {/* Main Lesson Summary Content (Dynamically updated according to selected Language) */}
+            <div className="topic-summary" style={{ fontSize: '1.05rem', lineHeight: 1.75 }}>
+              <FormatText text={nativeText || topic.summary} />
+            </div>
           </div>
         )}
 
