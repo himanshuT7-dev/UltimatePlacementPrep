@@ -592,8 +592,8 @@
   .hero-headline { font-size: clamp(1.6rem, 6vw, 2.5rem); }
   .hero-sub { font-size: 0.95rem; padding: 0 8px; }
   .feature-card { padding: 20px 16px; }
-  .hero-actions { flex-direction: column; gap: 10px; width: 100%; }
-  .hero-actions .btn { width: 100%; justify-content: center; }
+  .hero-actions { flex-direction: column; gap: 10px; width: 100%; padding: 0 16px; box-sizing: border-box; }
+  .btn-hero-primary, .btn-hero-secondary { width: 100%; justify-content: center; }
 }
 
 /* ════════════════════════════════════════════════════════
@@ -681,6 +681,13 @@
 .sandbox-demo-tabs {
   display: flex;
   gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sandbox-demo-tabs::-webkit-scrollbar {
+  display: none;
 }
 .sandbox-tab {
   display: flex;
