@@ -1,7 +1,7 @@
 export const SQL_TRACK = {
   id: 'sql',
   label: 'SQL & Databases',
-  icon: '🛢️',
+  icon: 'sql',
   color: '#10b981',
   totalTopics: 20,
   description: 'Master everything from basic queries to advanced window functions, indexing strategies, and database normalization.',
@@ -16,11 +16,7 @@ export const SQL_TRACK = {
           title: 'Database Fundamentals (DDL, DML, DCL, TCL)',
           level: 'Beginner',
           badge: 'badge-emerald',
-          summary: `SQL commands are divided into four main categories, each serving a distinct purpose in database management. 
-Data Definition Language (DDL) is used to define the database structure or schema. It includes commands like CREATE (to make new tables or databases), ALTER (to modify existing structures), and DROP (to delete structures entirely).
-Data Manipulation Language (DML) manages data within schema objects. This includes INSERT (adding new rows), UPDATE (modifying existing data), and DELETE (removing data).
-Data Control Language (DCL) manages permissions, primarily using GRANT (giving access) and REVOKE (removing access).
-Transaction Control Language (TCL) manages transactions to maintain consistency, using COMMIT (saving changes) and ROLLBACK (undoing changes). Understanding these categories is the first step to mastering SQL, as they form the foundation of how we interact with any relational database system.`,
+          summary: `SQL commands are divided into four main categories, each serving a distinct purpose in database management. Understanding these categories is the first step to mastering SQL, as they form the foundation of how we interact with any relational database system.\n\n• Data Definition Language (DDL): Used to define the database structure or schema. It includes commands like CREATE, ALTER, and DROP.\n• Data Manipulation Language (DML): Manages data within schema objects. This includes INSERT, UPDATE, and DELETE.\n• Data Control Language (DCL): Manages permissions, primarily using GRANT and REVOKE.\n• Transaction Control Language (TCL): Manages transactions to maintain consistency, using COMMIT and ROLLBACK.`,
           native: {
             Hinglish: 'Jaise ghar banane ke liye naksha chahiye (DDL), usme furniture rakhna DML hai. Keys DCL hain, aur changes save karna TCL hai.',
             Hindi: 'जैसे घर बनाने के लिए नक्शा चाहिए (DDL), उसमें सामान रखना DML है। चाबियां DCL हैं, और बदलाव सहेजना TCL है।',
@@ -62,10 +58,7 @@ WHERE emp_id = 2;`,
           title: 'Data Retrieval Basics (SELECT & WHERE)',
           level: 'Beginner',
           badge: 'badge-emerald',
-          summary: `The SELECT statement is the heart of SQL, allowing you to fetch data from a database. You can retrieve all columns using the asterisk (*) or specify exact column names to limit the data transferred, which is a best practice for performance.
-The WHERE clause filters the results based on specific conditions, ensuring you only get the rows you actually need. 
-You can combine multiple conditions using logical operators like AND, OR, and NOT. Additionally, operators like IN (to check against a list of values), BETWEEN (for ranges), and LIKE (for pattern matching) provide powerful ways to narrow down your results. 
-Understanding how to efficiently query and filter data is crucial because fetching unnecessary data puts undue load on both the database and the network.`,
+          summary: `The SELECT statement is the heart of SQL, allowing you to fetch data from a database. Understanding how to efficiently query and filter data is crucial because fetching unnecessary data puts undue load on both the database and the network.\n\n• SELECT Statement: Fetches data from a database, allowing retrieval of all columns or specific ones for performance.\n• WHERE Clause: Filters results based on specific conditions to return only the rows you need.\n• Logical Operators: Combine multiple conditions using AND, OR, and NOT.\n• Filtering Operators: Use IN for lists, BETWEEN for ranges, and LIKE for pattern matching to narrow down results.`,
           native: {
             Hinglish: 'SELECT matlab menu se dish order karna, aur WHERE matlab "bina pyaz ke" bolna. Sirf wahi aayega jo aapne manga hai.',
             Hindi: 'SELECT मतलब मेनू से डिश ऑर्डर करना, और WHERE मतलब "बिना प्याज के" बोलना। सिर्फ वही आएगा जो आपने मांगा है।',
@@ -110,10 +103,7 @@ AND salary BETWEEN 40000 AND 90000;`,
             title: 'GROUP BY Simulator',
             steps: []
           },
-          summary: `Aggregation functions like COUNT(), SUM(), AVG(), MAX(), and MIN() allow you to perform calculations on a set of values and return a single scalar result. They are essential for summarizing data.
-The GROUP BY statement works with these functions to group the result set by one or more columns. For instance, you can find the average salary per department.
-While the WHERE clause filters rows before aggregation occurs, the HAVING clause was added to SQL because WHERE cannot be used with aggregate functions. HAVING filters the results after they have been grouped.
-A common mistake is trying to use WHERE to filter aggregated metrics (e.g., WHERE SUM(salary) > 1000). Always remember: WHERE filters raw data, HAVING filters grouped data.`,
+          summary: `Aggregation functions allow you to perform calculations on a set of values and return a single scalar result, essential for summarizing data. Always remember: WHERE filters raw data, HAVING filters grouped data.\n\n• Aggregation Functions: Include COUNT(), SUM(), AVG(), MAX(), and MIN() to calculate metrics across values.\n• GROUP BY: Works with aggregation functions to group the result set by one or more columns.\n• WHERE Clause: Filters individual rows before any grouping or aggregation occurs.\n• HAVING Clause: Filters the results after they have been grouped by aggregate functions.`,
           native: {
             Hinglish: 'GROUP BY matlab class ke hisaab se students ko batna. HAVING matlab sirf un classes ko dekhna jinki average marks 80 se zyada hain.',
             Hindi: 'GROUP BY मतलब क्लास के हिसाब से छात्रों को बांटना। HAVING मतलब सिर्फ उन क्लासों को देखना जिनके औसत अंक 80 से ज्यादा हैं।',
@@ -169,12 +159,7 @@ HAVING AVG(salary) > 60000;`,
             title: 'SQL JOIN Simulator',
             steps: []
           },
-          summary: `JOINs are used to combine rows from two or more tables based on a related column between them.
-INNER JOIN returns records that have matching values in both tables.
-LEFT JOIN (or LEFT OUTER JOIN) returns all records from the left table, and the matched records from the right table (NULL if no match). RIGHT JOIN is the exact opposite.
-FULL JOIN returns all records when there is a match in either left or right table, filling missing matches with NULLs.
-CROSS JOIN produces a Cartesian product, matching every row of the first table with every row of the second. SELF JOIN is a regular join but the table is joined with itself (useful for hierarchical data like employee-manager relationships).
-Choosing the correct JOIN type is critical for ensuring data accuracy and avoiding bloated result sets (like accidental Cartesian products).`,
+          summary: `JOINs are used to combine rows from two or more tables based on a related column between them. Choosing the correct JOIN type is critical for ensuring data accuracy and avoiding bloated result sets.\n\n• INNER JOIN: Returns records that have matching values in both tables.\n• LEFT JOIN: Returns all records from the left table, and the matched records from the right table (NULL if no match). RIGHT JOIN is the exact opposite.\n• FULL JOIN: Returns all records when there is a match in either left or right table, filling missing matches with NULLs.\n• CROSS JOIN: Produces a Cartesian product, matching every row of the first table with every row of the second.\n• SELF JOIN: A regular join where the table is joined with itself, useful for hierarchical data.`,
           native: {
             Hinglish: 'INNER JOIN matlab common friends. LEFT JOIN matlab mere sabhi friends aur unme se jo common hain. CROSS JOIN matlab sabhi ka sabhi se connection.',
             Hindi: 'INNER JOIN मतलब कॉमन दोस्त। LEFT JOIN मतलब मेरे सभी दोस्त और उनमें से जो कॉमन हैं। CROSS JOIN मतलब सभी का सभी से कनेक्शन।',
@@ -218,11 +203,7 @@ LEFT JOIN employees e2 ON e1.manager_id = e2.emp_id;`,
           title: 'Subqueries (Scalar, Inline, Correlated)',
           level: 'Intermediate',
           badge: 'badge-amber',
-          summary: `A Subquery is a query nested inside another query (e.g., inside a SELECT, INSERT, UPDATE, or DELETE statement).
-A Scalar subquery returns a single value (one row and one column) and can be used in SELECT or WHERE clauses.
-An Inline View is a subquery used in the FROM clause, acting as a temporary table that you can select from or join with.
-A Correlated subquery is special: it references columns from the outer query. Unlike normal subqueries which evaluate once, a correlated subquery evaluates once for EVERY row processed by the outer query. 
-While correlated subqueries can solve complex row-by-row comparisons (like finding employees who earn more than their department's average), they can be extremely slow on large datasets and should often be rewritten using JOINs or Window Functions.`,
+          summary: `A Subquery is a query nested inside another query. While subqueries can solve complex row-by-row comparisons, some types can be extremely slow on large datasets and should often be rewritten using JOINs or Window Functions.\n\n• Subquery: A nested query used inside a SELECT, INSERT, UPDATE, or DELETE statement.\n• Scalar Subquery: Returns a single value (one row and one column) and can be used in SELECT or WHERE clauses.\n• Inline View: A subquery used in the FROM clause, acting as a temporary table that you can select from or join with.\n• Correlated Subquery: References columns from the outer query and evaluates once for every row processed by the outer query, which can cause performance issues.`,
           native: {
             Hinglish: 'Subquery matlab box ke andar box. Normal subquery ek baar khulta hai. Correlated subquery har item ke liye naya box kholta hai (isliye slow hai).',
             Hindi: 'Subquery मतलब बॉक्स के अंदर बॉक्स। Normal subquery एक बार खुलता है। Correlated subquery हर आइटम के लिए नया बॉक्स खोलता है (इसलिए धीमा है)।',
@@ -267,10 +248,7 @@ WHERE e1.salary > (
           title: 'Common Table Expressions (CTEs)',
           level: 'Intermediate',
           badge: 'badge-amber',
-          summary: `A Common Table Expression (CTE) is a temporary, named result set created using the WITH clause. CTEs exist only during the execution of a single statement (SELECT, INSERT, UPDATE, or DELETE).
-CTEs make complex queries much more readable compared to deeply nested subqueries. You can define multiple CTEs in a single WITH clause, separating them with commas, and they can reference each other sequentially.
-Recursive CTEs are a powerful variant used to query hierarchical data, such as organizational charts (manager-employee relationships) or graph traversal. A recursive CTE consists of an anchor member (the base case) and a recursive member (the step), unioned together.
-Using CTEs improves code maintainability and allows developers to break down massive queries into logical, bite-sized blocks.`,
+          summary: `A Common Table Expression (CTE) is a temporary, named result set created using the WITH clause. Using CTEs improves code maintainability and allows developers to break down massive queries into logical, bite-sized blocks.\n\n• CTE Basics: Exist only during the execution of a single statement to make complex queries readable.\n• Multiple CTEs: Can be defined in a single WITH clause, separated by commas, and can reference each other sequentially.\n• Recursive CTEs: Used to query hierarchical data or graph traversal, consisting of an anchor member and a recursive member.\n• Anchor Member: The base case in a recursive CTE.\n• Recursive Member: The step in a recursive CTE that references the CTE itself.`,
           native: {
             Hinglish: 'CTE matlab complex formula ko chhote variables me todna. Readability badh jati hai. Jaise maths me let x = ..., let y = ..., fir x + y.',
             Hindi: 'CTE मतलब जटिल फॉर्मूले को छोटे वेरिएबल्स में तोड़ना। इसे पढ़ना आसान हो जाता है। जैसे गणित में let x = ..., let y = ..., फिर x + y.',
@@ -325,13 +303,7 @@ SELECT * FROM EmpHierarchy;`,
           title: 'Window Functions (ROW_NUMBER, RANK, LEAD, LAG)',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `Window functions perform calculations across a set of table rows that are somehow related to the current row, similar to aggregate functions. However, unlike standard aggregations (which collapse rows into a single output), window functions do NOT cause rows to become grouped into a single output row — the rows retain their separate identities.
-The OVER() clause defines the window. PARTITION BY divides the result set into partitions (like GROUP BY). ORDER BY defines the logical order of rows within that partition.
-Common functions include:
-- ROW_NUMBER(): Assigns a unique sequential integer to rows.
-- RANK() & DENSE_RANK(): Rank rows; RANK skips numbers on ties (1, 2, 2, 4), DENSE_RANK doesn't (1, 2, 2, 3).
-- LEAD() & LAG(): Access data from subsequent or previous rows in the same result set without self-joining. Very useful for time-series analysis (e.g., day-over-day growth).
-- SUM() OVER(): Calculates running totals or moving averages.`,
+          summary: `Window functions perform calculations across related table rows without collapsing them into a single output, retaining their separate identities. They are defined using the OVER() clause.\n\n• OVER() Clause: Defines the window, using PARTITION BY to divide sets and ORDER BY for logical row order.\n• ROW_NUMBER(): Assigns a unique sequential integer to rows.\n• RANK() & DENSE_RANK(): Rank rows, where RANK skips numbers on ties and DENSE_RANK does not.\n• LEAD() & LAG(): Access data from subsequent or previous rows without self-joining, useful for time-series analysis.\n• SUM() OVER(): Calculates running totals or moving averages across the defined window.`,
           native: {
             Hinglish: 'Aggregate functions rows ko crush karke ek bana dete hain. Window functions rows ko zinda rakhte hain par bagal me calculation ka column add kar dete hain.',
             Hindi: 'Aggregate functions रोस को कुचल कर एक बना देते हैं। Window functions रोस को जिंदा रखते हैं पर बगल में कैलकुलेशन का कॉलम जोड़ देते हैं।',
@@ -374,11 +346,7 @@ FROM employees;`,
           title: 'Indexing (B-Tree, Hash, Composite, Covering)',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `An Index is a performance optimization data structure that improves the speed of data retrieval operations on a database table at the cost of slower writes (INSERT/UPDATE/DELETE) and increased storage space.
-B-Tree (Balanced Tree) is the default index type in most RDBMS. It keeps data sorted and allows for fast searches, range queries (>, <, BETWEEN), and sorting.
-Hash Indexes are used for exact match lookups (=) and are extremely fast, but they cannot be used for range queries or sorting.
-A Composite Index spans multiple columns. Order matters immensely here (Leftmost Prefix Rule). If you index (A, B, C), queries filtering on A, or A and B will use the index, but queries filtering ONLY on B or C will not.
-A Covering Index is an index that includes all the columns needed to satisfy the query. If a query finds all its SELECT columns in the index itself, it doesn't need to read the actual table data (an Index-Only Scan), which is incredibly fast.`,
+          summary: `An Index is a performance optimization data structure that improves data retrieval speed at the cost of slower writes and increased storage space.\n\n• B-Tree Index: The default index type that keeps data sorted and allows for fast searches, range queries, and sorting.\n• Hash Index: Extremely fast for exact match lookups but cannot be used for range queries or sorting.\n• Composite Index: Spans multiple columns where order matters based on the Leftmost Prefix Rule.\n• Covering Index: Includes all columns needed to satisfy the query, allowing an Index-Only Scan without reading the actual table data.`,
           native: {
             Hinglish: 'Index book ke peeche ke index page jaisa hai. Bina uske puri book (table scan) padhni padegi kisi word ko dhundne ke liye.',
             Hindi: 'इंडेक्स किताब के पीछे के इंडेक्स पेज जैसा है। बिना इसके किसी शब्द को ढूंढने के लिए पूरी किताब (टेबल स्कैन) पढ़नी पड़ेगी।',
@@ -418,10 +386,7 @@ DROP INDEX idx_emp_salary;`,
           title: 'Query Optimization & EXPLAIN ANALYZE',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `EXPLAIN is a command that shows the execution plan of a statement. The execution plan dictates how the database engine will retrieve the data (e.g., using a Sequential Scan, Index Scan, Hash Join).
-While EXPLAIN gives you the estimated plan, EXPLAIN ANALYZE actually executes the query and shows both the estimated costs AND the actual runtime execution times. This is the ultimate tool for diagnosing slow queries.
-When analyzing plans, look out for "Seq Scan" (Sequential Scan) on large tables, which means the database is reading every single row because no suitable index exists. Look for expensive operations like "Nested Loop Joins" on unindexed columns or disk-based "External Merge Sorts".
-Optimizing queries often involves rewriting them (e.g., replacing correlated subqueries with JOINs), adding appropriate indexes, updating table statistics, or limiting the dataset size early in the plan.`,
+          summary: `EXPLAIN is a command that shows the execution plan of a statement, dictating how the database engine will retrieve data. Optimizing queries involves rewriting them, adding indexes, or updating statistics based on these plans.\n\n• EXPLAIN: Shows the estimated execution plan for a query without actually running it.\n• EXPLAIN ANALYZE: Executes the query and shows both estimated costs and actual runtime execution times for diagnosing issues.\n• Sequential Scan (Seq Scan): An operation where the database reads every single row because no suitable index exists.\n• Expensive Operations: Includes actions like Nested Loop Joins on unindexed columns or disk-based External Merge Sorts that slow down queries.`,
           native: {
             Hinglish: 'EXPLAIN aapko batata hai Google Maps kis raste se jayega. EXPLAIN ANALYZE actual me car chala ke batata hai kitna time laga aur kahan traffic (bottleneck) tha.',
             Hindi: 'EXPLAIN आपको बताता है Google Maps किस रास्ते से जाएगा। EXPLAIN ANALYZE असल में कार चला कर बताता है कि कितना समय लगा और कहां ट्रैफिक था।',
@@ -471,12 +436,7 @@ WHERE e.salary > 50000;
           title: 'Transactions & TCL Commands',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `A Transaction is a single logical unit of work that consists of one or more SQL statements. Transactions guarantee that either all the statements within them succeed, or none of them do, preventing partial updates that could corrupt business logic (like transferring money between bank accounts).
-TCL (Transaction Control Language) commands manage these transactions.
-BEGIN or START TRANSACTION initiates the block.
-COMMIT saves all changes made during the transaction permanently to the disk.
-ROLLBACK undoes all changes made during the transaction, reverting the database to its state before the transaction began.
-SAVEPOINT allows you to set a marker within a transaction, so you can roll back to that specific point without canceling the entire transaction. Properly managing transactions is crucial for data integrity in concurrent applications.`,
+          summary: `A Transaction is a single logical unit of work consisting of one or more SQL statements. Properly managing transactions guarantees that either all statements succeed or none do, ensuring data integrity.\n\n• Transaction: A logical unit of work preventing partial updates that could corrupt business logic.\n• BEGIN / START TRANSACTION: Initiates a new transaction block.\n• COMMIT: Saves all changes made during the transaction permanently to the disk.\n• ROLLBACK: Undoes all changes made during the transaction, reverting the database state.\n• SAVEPOINT: Sets a marker within a transaction to allow rolling back to a specific point without canceling the entire block.`,
           native: {
             Hinglish: 'Transaction matlab "All or Nothing". Ya toh ATM se paise niklenge aur account minus hoga (COMMIT), ya agar error aaya toh kuch nahi hoga (ROLLBACK).',
             Hindi: 'ट्रांजैक्शन मतलब "सब या कुछ नहीं"। या तो ATM से पैसे निकलेंगे और अकाउंट से कटेंगे (COMMIT), या अगर एरर आया तो कुछ नहीं होगा (ROLLBACK)।',
@@ -526,13 +486,7 @@ COMMIT;`,
           title: 'ACID Properties & Isolation Levels',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `ACID is an acronym defining 4 key properties of database transactions: 
-Atomicity (All or nothing), Consistency (Data remains valid before/after), Isolation (Concurrent transactions don't interfere), and Durability (Committed data survives crashes).
-Isolation Levels control how strictly transactions are separated from each other, balancing data consistency against performance/concurrency.
-1. Read Uncommitted: Lowest level. Suffers from "Dirty Reads" (reading uncommitted data from another transaction).
-2. Read Committed: Prevents dirty reads. But suffers from "Non-repeatable Reads" (reading the same row twice gives different results if someone else committed an update).
-3. Repeatable Read: Prevents non-repeatable reads by locking read rows. Suffers from "Phantom Reads" (new rows might appear if someone else inserts data matching your query criteria).
-4. Serializable: Highest level. Complete isolation as if transactions ran sequentially. No dirty, non-repeatable, or phantom reads, but heavily limits concurrency and causes lock contention.`,
+          summary: `ACID is an acronym defining key properties of database transactions, while Isolation Levels control how strictly transactions are separated from each other.\n\n• Atomicity: Ensures transactions are "all or nothing".\n• Consistency: Guarantees data remains valid before and after transactions.\n• Isolation: Ensures concurrent transactions do not interfere with each other.\n• Durability: Guarantees committed data survives system crashes.\n• Read Uncommitted: Lowest isolation level suffering from Dirty Reads.\n• Read Committed: Prevents dirty reads but allows Non-repeatable Reads.\n• Repeatable Read: Prevents non-repeatable reads by locking rows but allows Phantom Reads.\n• Serializable: Highest isolation level ensuring complete isolation at the cost of concurrency.`,
           native: {
             Hinglish: 'ACID rules database ko reliable banate hain. Isolation levels decide karte hain ki do users ek hi data ko edit karein toh unhe kya dikhega.',
             Hindi: 'ACID नियम डेटाबेस को विश्वसनीय बनाते हैं। Isolation levels तय करते हैं कि अगर दो यूजर्स एक ही डेटा को एडिट करें तो उन्हें क्या दिखेगा।',
@@ -567,12 +521,7 @@ COMMIT;`,
           title: 'Database Normalization (1NF to BCNF)',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `Normalization is the process of organizing data to reduce redundancy and improve data integrity.
-1NF (First Normal Form): Eliminate repeating groups and ensure each column contains atomic (indivisible) values. No comma-separated lists in a column!
-2NF (Second Normal Form): Must be in 1NF. Every non-key column must be fully dependent on the ENTIRE primary key (crucial for composite keys). Removes partial dependencies.
-3NF (Third Normal Form): Must be in 2NF. Every non-key column must depend ONLY on the primary key, not on other non-key columns. "The key, the whole key, and nothing but the key." Removes transitive dependencies.
-BCNF (Boyce-Codd Normal Form): A slightly stronger version of 3NF. For every non-trivial functional dependency X -> Y, X must be a superkey.
-While normalizing reduces duplication and write anomalies, over-normalizing (many small tables) requires too many joins, slowing down read queries. Denormalization is sometimes used in Data Warehouses for read performance.`,
+          summary: `Normalization is the process of organizing data to reduce redundancy and improve data integrity. While normalizing reduces write anomalies, denormalization is sometimes used for read performance in Data Warehouses.\n\n• 1NF (First Normal Form): Eliminates repeating groups to ensure each column contains atomic values.\n• 2NF (Second Normal Form): Requires 1NF and ensures every non-key column is fully dependent on the entire primary key, removing partial dependencies.\n• 3NF (Third Normal Form): Requires 2NF and ensures non-key columns depend only on the primary key, removing transitive dependencies.\n• BCNF (Boyce-Codd Normal Form): A stronger version of 3NF where every non-trivial functional dependency must have a superkey.\n• Denormalization: The process of adding redundancy back to a normalized schema to improve read performance.`,
           native: {
             Hinglish: 'Normalization matlab data ko saaf aur organize karna taaki duplicate na ho. 1NF: ek dabbe me ek cheez. 3NF: har cheez sirf ID pe depend kare, dusre details pe nahi.',
             Hindi: 'Normalization मतलब डेटा को साफ और व्यवस्थित करना ताकि डुप्लीकेट न हो। 1NF: एक डिब्बे में एक चीज। 3NF: हर चीज सिर्फ ID पर निर्भर करे, दूसरे डिटेल्स पर नहीं।',
@@ -628,10 +577,7 @@ CREATE TABLE order_items (
           title: 'Views & Materialized Views',
           level: 'Intermediate',
           badge: 'badge-amber',
-          summary: `A View is essentially a virtual table based on the result-set of an SQL statement. It doesn't store data itself (standard views), but rather saves a complex query. This is great for simplifying complex joins for end-users and providing an additional layer of security by restricting access to underlying base tables.
-However, standard views re-run their underlying query every time they are accessed. This can be slow for massive datasets.
-A Materialized View, on the other hand, actually stores the query result physically on the disk. Accessing it is extremely fast, just like reading a regular table. The trade-off is that the data can become stale. Materialized views must be refreshed (manually or on a schedule) to reflect changes in the underlying base tables.
-Understanding when to use a standard view (for security and simplicity on live data) versus a materialized view (for fast read access on dashboard data that doesn't need to be real-time) is a frequent interview discussion point.`,
+          summary: `Views serve as virtual tables based on the result-set of an SQL query. Understanding when to use a standard view versus a materialized view is a frequent interview discussion point.\n\n• Standard View: A virtual table that saves a complex query for simplicity and security but re-runs the query upon every access.\n• Materialized View: Physically stores the query result on disk for extremely fast access, though the data can become stale.\n• Refresh: The process of updating a materialized view to reflect changes in the underlying base tables.\n• Security layer: Views can restrict access to underlying base tables, exposing only necessary data to users.`,
           native: {
             Hinglish: 'View ek smart window hai, parda hatao toh original data dikhta hai. Materialized view ek photo hai, fast khulti hai par agar original change ho toh photo refresh karni padti hai.'
           },
@@ -672,10 +618,7 @@ REFRESH MATERIALIZED VIEW monthly_sales_report;`,
           title: 'Stored Procedures & Functions',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `Stored Procedures and Functions allow you to write procedural code (using variables, IF/ELSE statements, loops) and store it directly inside the database.
-A Stored Function must return a single value (or a table) and can be used directly inside SELECT or WHERE statements. They are strictly for computation and cannot modify database state (no INSERT/UPDATE/DELETE).
-A Stored Procedure does not return a direct value in the same way (though it can use OUT parameters) and cannot be used in a SELECT statement. However, it can perform multiple complex operations, manage transactions (COMMIT/ROLLBACK), and execute DML statements to modify data.
-Using them encapsulates business logic at the database level, reducing network traffic between the application and the DB. However, overuse can lead to "vendor lock-in" (tying you tightly to Oracle, SQL Server, etc.) and makes version control and debugging harder compared to application-layer code.`,
+          summary: `Stored Procedures and Functions allow you to write procedural code directly inside the database. Using them encapsulates business logic and reduces network traffic, though overuse can lead to vendor lock-in.\n\n• Stored Function: Returns a single value and can be used directly inside queries, strictly for computation without modifying database state.\n• Stored Procedure: Performs complex operations and executes DML statements to modify data, but cannot be used within a SELECT statement.\n• Encapsulation: Storing business logic at the database level to reduce application-database network traffic.\n• Vendor Lock-in: The risk of tying an application too tightly to a specific database vendor's procedural SQL dialect.`,
           native: {
             Hinglish: 'Function ek calculator ki tarah hai, input do aur result lo. Procedure ek robot ki tarah hai, usko order do aur wo database ke andar jaake update, delete, sab karke aayega.'
           },
@@ -718,11 +661,7 @@ SELECT @new_sal;`,
           title: 'Database Triggers',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `A Trigger is a special type of stored procedure that automatically executes (fires) when a specific event occurs in the database table. These events are typically DML operations: INSERT, UPDATE, or DELETE.
-Triggers can be set to run BEFORE or AFTER the event. 
-BEFORE triggers are often used for data validation or sanitization (e.g., ensuring a negative salary cannot be inserted, or converting text to uppercase before saving).
-AFTER triggers are commonly used for maintaining audit trails, logging changes, or updating related tables (e.g., inserting a record into a 'history' table after an employee's salary is updated).
-While triggers enforce rules automatically at the database level, they should be used sparingly. Because they run silently in the background ("magic"), they can cause hidden performance bottlenecks or unintended cascading effects that are extremely difficult for developers to debug.`,
+          summary: `A Trigger is a special type of stored procedure that automatically executes when a specific DML event occurs. While they enforce rules automatically, triggers should be used sparingly to avoid hidden performance bottlenecks.\n\n• Trigger: Automatically executes in response to INSERT, UPDATE, or DELETE events on a table.\n• BEFORE Trigger: Runs before the event, often used for data validation or sanitization.\n• AFTER Trigger: Runs after the event, commonly used for maintaining audit trails or updating related tables.\n• Background Execution: Triggers run silently, which can lead to unintended cascading effects that are difficult to debug.`,
           native: {
             Hinglish: 'Trigger ek hidden security guard hai. Jaise hi koi table me data dalta hai, trigger apne aap activate hoke check karta hai ya log book me entry kar deta hai.'
           },
@@ -773,9 +712,7 @@ DELIMITER ;`,
           title: 'Cursors & Temporary Tables',
           level: 'Intermediate',
           badge: 'badge-amber',
-          summary: `SQL is inherently set-based, meaning it prefers to operate on entire blocks of data simultaneously. However, sometimes procedural row-by-row processing is unavoidable. This is where Cursors come in.
-A Cursor allows you to iterate through a result set one row at a time. It involves declaring the cursor, opening it, fetching rows in a loop, and closing it. While useful for complex sequential logic that cannot be handled by standard JOINs or Window Functions, cursors are notoriously slow and consume significant database resources. They should be considered a last resort.
-Temporary Tables (#temp or standard CREATE TEMP TABLE) are short-lived tables that exist only for the duration of a session or transaction. They are extremely useful for breaking down massively complex queries. Instead of a giant 10-table join, you can process smaller chunks, insert intermediate results into a temp table, and join against that. This often provides the query planner a much better execution path and improves overall performance.`,
+          summary: `While SQL prefers set-based operations, sometimes procedural processing is required. Cursors and Temporary Tables offer different approaches for handling complex sequential or massively joined data logic.\n\n• Cursor: Allows iterating through a result set one row at a time, but is notoriously slow and resource-heavy.\n• Temporary Table: A short-lived table that exists only for the session duration, useful for breaking down complex queries.\n• Row-by-Row Processing: The procedural approach used by cursors that contradicts SQL's native set-based nature.\n• Query Simplification: Using temp tables to store intermediate results, providing the query planner a better execution path.`,
           native: {
             Hinglish: 'SQL ek baari me sab kaam karne me acha hai. Cursor matlab ek-ek karke kaam karna, jo slow hai. Temp table rough copy jaisa hai, hisaab lagaya aur session khatam hote hi phek diya.'
           },
@@ -823,12 +760,7 @@ DROP TABLE temp_top_earners;
           title: 'SQL Anti-Patterns & Best Practices',
           level: 'Intermediate',
           badge: 'badge-amber',
-          summary: `Writing SQL that "works" is easy; writing scalable SQL is hard. Recognizing Anti-Patterns is crucial for technical interviews.
-1. The N+1 Query Problem: Often caused by ORMs (like Hibernate or Prisma). You fetch 1 list of objects, and then run an additional query for each object to fetch related data. Solution: Use JOINs or Eager Loading.
-2. Using SELECT *: Pulling all columns wastes network bandwidth and memory, especially if text/blob columns exist. Always explicitly name the columns you need.
-3. Missing Indexes on Foreign Keys: If you frequently join tables, the foreign key columns should almost always be indexed. Missing them causes massive full-table scans.
-4. Over-Normalization: While 3NF is great for write-heavy systems, splitting data across too many tables requires complex, expensive JOINs for simple reads. Denormalization is a valid strategy for read-heavy analytics.
-5. Implicit Casting: Comparing a VARCHAR column to an INT causes the database to convert the data type on the fly, rendering indexes completely useless (a phenomenon called 'Sargability' failure).`,
+          summary: `Writing scalable SQL requires recognizing and avoiding common Anti-Patterns that degrade performance and system efficiency.\n\n• N+1 Query Problem: Fetching a list of objects and running additional queries for each, solved by using JOINs or Eager Loading.\n• SELECT *: Pulling all columns wastes network bandwidth and memory; columns should be explicitly named.\n• Missing Foreign Key Indexes: Failing to index frequently joined foreign keys causes massive full-table scans.\n• Over-Normalization: Splitting data across too many tables, leading to complex and expensive JOINs for simple reads.\n• Implicit Casting: Comparing mismatched data types forces on-the-fly conversion, disabling indexes and causing Sargability failure.`,
           native: {
             Hinglish: 'SELECT * use karna matlab thode se saman ke liye pura dukan kharidna. Aur N+1 query matlab har ek item ke liye baar baar dukan jana, ek hi baar me list leke kyu nahi jate?'
           },
@@ -868,11 +800,7 @@ SELECT * FROM employees WHERE emp_id = '1001';`,
           title: 'Data Modeling & Relationships',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `Data modeling is the process of mapping real-world entities into database tables and defining relationships between them using Primary Keys (PK) and Foreign Keys (FK).
-1. One-to-One (1:1): Rare. Used to split a wide table into two (e.g., 'users' and 'user_sensitive_data'). The FK in table B is also its PK.
-2. One-to-Many (1:N): The most common relationship. E.g., one Department has many Employees. The "Many" side (employees) holds the FK pointing to the "One" side (department).
-3. Many-to-Many (M:N): Relational databases cannot handle M:N directly. E.g., Students and Courses (a student takes many courses, a course has many students). You must resolve this by creating a Junction Table (or associative entity) in the middle (e.g., 'student_courses') that holds FKs for both students and courses.
-Understanding ER Diagrams (Entity-Relationship) and how to physically implement these conceptual relationships is a staple of system design interviews.`,
+          summary: `Data modeling maps real-world entities into database tables, defining their interactions through Primary Keys and Foreign Keys. Understanding these relationships is a staple of system design interviews.\n\n• One-to-One (1:1): A rare relationship used to split a wide table, where the foreign key is also the primary key.\n• One-to-Many (1:N): The most common relationship where the "many" side holds a foreign key pointing to the "one" side.\n• Many-to-Many (M:N): A relationship that requires a Junction Table to resolve, as relational databases cannot handle it directly.\n• Junction Table: An associative entity holding foreign keys for both sides of a Many-to-Many relationship.`,
           native: {
             Hinglish: 'One-to-Many me bacche ke paas parent ka ID hota hai. Many-to-Many direct nahi hota, uske liye beech me ek "Junction Table" dalna padta hai jo dono ko jodta hai.'
           },
@@ -923,12 +851,7 @@ JOIN courses c ON e.course_id = c.course_id;`,
           title: 'Partitioning & Sharding',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `As databases grow to terabytes of data, single tables become unmanageable. Partitioning and Sharding are techniques to distribute data for performance and scale.
-Partitioning (Vertical/Horizontal): This usually happens within the same database instance. 
-- Vertical Partitioning splits columns (putting heavy blob/text data in a separate table).
-- Horizontal Partitioning splits rows into different physical partitions based on a key (e.g., Range partitioning by year: 2021 data in partition A, 2022 in partition B). This speeds up queries via "Partition Pruning" (ignoring partitions that don't match the WHERE clause).
-Sharding is a specific type of horizontal partitioning where the data is split across entirely different physical database servers. This enables true Horizontal Scaling (adding more cheap machines) rather than Vertical Scaling (buying a more expensive, massive server). 
-However, Sharding introduces massive complexity: JOINs across different shards are almost impossible, and ensuring data consistency across multiple servers is extremely difficult.`,
+          summary: `As databases grow, single tables become unmanageable, requiring data distribution techniques for performance and scale. Sharding introduces massive complexity for joins and consistency.\n\n• Vertical Partitioning: Splits columns to separate heavy data like text or blobs into a different table within the same instance.\n• Horizontal Partitioning: Splits rows into physical partitions based on a key, speeding up queries via Partition Pruning.\n• Sharding: A form of horizontal partitioning where data is split across entirely different physical database servers.\n• Horizontal Scaling: Adding more physical machines to handle load, facilitated by sharding.\n• Vertical Scaling: Upgrading an existing server's hardware capacity instead of adding more machines.`,
           native: {
             Hinglish: 'Partitioning matlab ek badi almirah me alag alag racks banana date ke hisaab se. Sharding matlab jab ek almirah bhar jaye, toh dusre room me nayi almirah rakh dena.'
           },
@@ -971,16 +894,7 @@ CREATE TABLE sales_2023 PARTITION OF sales_log
           title: 'NoSQL vs SQL',
           level: 'Advanced',
           badge: 'badge-violet',
-          summary: `System design interviews often require choosing between SQL and NoSQL.
-SQL (Relational): Best for structured data, complex querying (JOINs), and strict ACID compliance (financial transactions). Scales vertically. Examples: PostgreSQL, MySQL.
-NoSQL (Non-Relational): Best for rapid development with unstructured/semi-structured data, massive volumes of data, and high velocity reads/writes. Scales horizontally very easily.
-Types of NoSQL:
-- Document (MongoDB): Stores JSON-like objects. Great for catalogs.
-- Key-Value (Redis, DynamoDB): Extremely fast lookups. Great for caching or session storage.
-- Column-Family (Cassandra): Great for massive write-heavy time-series data.
-- Graph (Neo4j): Optimized for highly connected data (social networks).
-The CAP Theorem states that in a distributed system, you can only guarantee 2 of 3 properties: Consistency (all nodes see the same data), Availability (every request gets a response), and Partition Tolerance (system works despite network failures). 
-Since network failures (Partitions) are inevitable, databases must choose between Consistency (SQL / CP systems) and Availability (NoSQL / AP systems like Cassandra using eventual consistency).`,
+          summary: `Choosing between SQL and NoSQL is crucial in system design, depending on the need for structured relationships versus horizontal scalability and flexibility. The choice is often dictated by the CAP Theorem trade-offs.\n\n• SQL (Relational): Best for structured data, complex queries, and strict ACID compliance; scales vertically.\n• NoSQL (Non-Relational): Best for unstructured data and high-velocity operations; scales horizontally easily.\n• Document Database: Stores JSON-like objects, ideal for catalogs (e.g., MongoDB).\n• Key-Value Store: Extremely fast lookups, perfect for caching or sessions (e.g., Redis, DynamoDB).\n• Column-Family Store: Designed for massive write-heavy time-series data (e.g., Cassandra).\n• Graph Database: Optimized for highly connected relationship data (e.g., Neo4j).\n• CAP Theorem: States a distributed system can only guarantee two of Consistency, Availability, and Partition Tolerance.`,
           native: {
             Hinglish: 'SQL ek strict excel sheet hai jahan format fix hai. NoSQL ek notebook hai jahan aap kahin bhi kuch bhi likh sakte ho (document). Bank me SQL chahiye, Twitter/Facebook me NoSQL.'
           },

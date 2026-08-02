@@ -1,7 +1,7 @@
 export const JAVA_TRACK = {
   id: 'java',
-  label: 'Java Ecosystem',
-  icon: '☕',
+  label: 'Java (OOPs & Core)',
+  icon: 'java',
   color: '#f59e0b',
   totalTopics: 30,
   description: 'Java Basics → OOP → JVM → Collections → Concurrency → Java 8-21 → Spring Boot → Patterns → DSA → System Design',

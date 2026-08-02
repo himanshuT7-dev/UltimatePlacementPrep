@@ -1,17 +1,27 @@
 export const REACT_TRACK = {
   id: 'react',
   label: 'React.js',
-  icon: '⛛️',
+  icon: 'react',
   color: '#8b5cf6',
   totalTopics: 20,
   description: 'Master React.js from fundamentals to advanced concepts, hooks, and routing.',
   modules: [
     {
-      id: 'react-1',
+      id: 'react-m1',
+      title: 'Module 1: React Fundamentals & Advanced Concepts',
+      topics: [
+        {
+          id: 'react-1',
       title: 'JSX, Virtual DOM & Fiber Architecture',
       level: 'Beginner',
       badge: 'badge-purple',
-      summary: 'React uses a Virtual DOM to optimize updates. Instead of directly manipulating the real DOM (which is slow), React creates a lightweight in-memory representation. When state changes, React creates a new Virtual DOM and compares it with the old one using a "Diffing Algorithm" (Heuristic O(N) complexity). It identifies the minimum number of changes needed. Then, it batches these updates and applies them to the real DOM (Reconciliation). React Fiber, introduced in React 16, is a complete rewrite of the core algorithm. It allows rendering to be interruptible. Fiber breaks work into chunks, prioritizing urgent updates (like typing) over non-urgent ones (like background data fetching), ensuring a smooth UI. JSX is a syntax extension that looks like HTML but compiles to `React.createElement()` calls.',
+      summary: `React uses a Virtual DOM to optimize updates.
+
+• Virtual DOM: A lightweight in-memory representation of the real DOM.
+• Diffing Algorithm: Compares the new Virtual DOM with the old one to identify minimum changes needed.
+• Reconciliation: The process of batching updates and applying them to the real DOM.
+• React Fiber: A complete rewrite of the core algorithm that makes rendering interruptible and prioritizes urgent updates.
+• JSX: A syntax extension that looks like HTML but compiles to React.createElement() calls.`,
       native: {
         Hinglish: "Virtual DOM ek rough copy ki tarah hai. Direct original copy me changes karne se pehle, rough copy me check karke sirf zaruri changes original me daalte hain.",
         Hindi: "वर्चुअल डोम एक रफ कॉपी की तरह है। सीधे मूल में परिवर्तन करने के बजाय, रफ कॉपी में जांच करके केवल आवश्यक परिवर्तन मूल में डाले जाते हैं।",
@@ -40,7 +50,13 @@ const element = React.createElement(
       title: 'Props vs State & Component Basics',
       level: 'Beginner',
       badge: 'badge-purple',
-      summary: 'Props (Properties) and State are both plain JavaScript objects that hold information, but they have different purposes. Props are passed from a parent component to a child component. They are read-only (immutable) from the child\'s perspective. State, on the other hand, is managed internally by the component itself and can change over time. When state or props change, React re-renders the component. "Lifting State Up" is a pattern where state shared by multiple sibling components is moved to their closest common parent. Controlled components have their form data controlled by React state, whereas Uncontrolled components keep their own state internally and use refs to access the DOM values.',
+      summary: `Props (Properties) and State are both plain JavaScript objects that hold information, but they have different purposes.
+
+• Props: Properties passed from a parent component to a child component that are read-only (immutable) from the child's perspective.
+• State: Data managed internally by the component itself that can change over time.
+• Lifting State Up: A pattern where state shared by multiple sibling components is moved to their closest common parent.
+• Controlled Components: Components that have their form data controlled by React state.
+• Uncontrolled Components: Components that keep their own state internally and use refs to access the DOM values.`,
       native: {
         Hinglish: "Props matlab jo parents se milta hai (unchangeable), aur State apna personal bank balance hai jo hum change kar sakte hain.",
         Hindi: "प्रॉप्स माता-पिता से मिलने वाली चीजों की तरह हैं (अपरिवर्तनीय), और स्टेट आपका निजी बैंक बैलेंस है जिसे आप बदल सकते हैं।",
@@ -70,7 +86,12 @@ function Child({ value, onChange }) {
       title: 'useState Deep Dive',
       level: 'Intermediate',
       badge: 'badge-purple',
-      summary: '`useState` is a Hook that lets you add state to functional components. It returns an array with the current state value and a function to update it. State updates are asynchronous; calling the setter does not immediately change the state variable in the current render cycle. For updates depending on the previous state, always use the functional update form: `setCount(prev => prev + 1)`. If initial state computation is expensive, pass a function for lazy initialization: `useState(() => expensiveComputation())`. In React 18, state updates are automatically batched for better performance, meaning multiple `setState` calls inside a single event handler or setTimeout will trigger only one re-render.',
+      summary: `useState is a Hook that lets you add state to functional components.
+
+• State Updates: Asynchronous operations where calling the setter does not immediately change the state variable in the current render cycle.
+• Functional Updates: Form used when updates depend on the previous state (e.g., setCount(prev => prev + 1)).
+• Lazy Initialization: Passing a function to useState for expensive initial state computations.
+• Automatic Batching: In React 18, multiple setState calls inside a single event handler trigger only one re-render for better performance.`,
       native: {
         Hinglish: "State update turant nahi hota, thoda time leta hai. Agar purani value pe update depend karta hai, toh hamesha 'prev => prev + 1' use karo.",
         Hindi: "स्टेट अपडेट तुरंत नहीं होता। यदि नया अपडेट पुराने मान पर निर्भर करता है, तो हमेशा फंक्शनल अपडेट (prev => prev + 1) का उपयोग करें।",
@@ -101,7 +122,12 @@ function Child({ value, onChange }) {
       title: 'useEffect & Lifecycle',
       level: 'Intermediate',
       badge: 'badge-purple',
-      summary: '`useEffect` lets you perform side effects (data fetching, subscriptions, DOM manipulation) in function components. It runs after the render. The dependency array `[]` controls when it re-runs. No array: runs on every render. Empty array `[]`: runs once on mount. Array with values `[x]`: runs when x changes. The return function acts as a cleanup, running before the component unmounts or before the effect runs again. Missing dependencies can lead to stale closures. A common mistake is omitting objects/functions from dependencies, causing infinite loops if they are recreated on every render. Use `useCallback` or move them inside the effect to fix this.',
+      summary: `useEffect lets you perform side effects in function components.
+
+• Dependency Array: Controls when the effect re-runs (no array for every render, empty array for once on mount, values array for when values change).
+• Cleanup Function: The return function that runs before the component unmounts or before the effect runs again.
+• Stale Closures: Issues caused by missing dependencies in the dependency array.
+• Infinite Loops: A common mistake caused by omitting objects or functions from dependencies.`,
       native: {
         Hinglish: "useEffect hook side works ke liye hai like API calls. Dependency array dhyaan se use karna chahiye warna infinite loop ban sakta hai.",
         Hindi: "useEffect का उपयोग API कॉल जैसे बाहरी कार्यों के लिए होता है। डिपेंडेंसी ऐरे का ध्यान रखें, अन्यथा इनफिनिट लूप बन सकता है।",
@@ -134,7 +160,11 @@ function Child({ value, onChange }) {
       title: 'useRef & DOM Access',
       level: 'Intermediate',
       badge: 'badge-purple',
-      summary: '`useRef` returns a mutable ref object whose `.current` property is initialized to the passed argument. Unlike state, changing a ref does NOT trigger a re-render. It is perfect for storing mutable values across renders without causing UI updates (like keeping track of intervals or previous state). Its most common use case is accessing DOM elements directly (e.g., focusing an input). When you need to pass a ref from a parent to a custom child component, you must wrap the child in `React.forwardRef()`, because refs are not passed as normal props.',
+      summary: `useRef returns a mutable ref object whose .current property is initialized to the passed argument.
+
+• Mutable Storage: Stores values across renders without causing UI updates when changed.
+• DOM Access: The most common use case, allowing direct access to DOM elements.
+• React.forwardRef(): A wrapper required when passing a ref from a parent to a custom child component.`,
       native: {
         Hinglish: "useRef ek box ki tarah hai jisme value save hoti hai par value change hone pe component re-render nahi hota. Direct DOM ko touch karne ke liye best hai.",
         Hindi: "useRef एक बॉक्स की तरह है जिसमें मान सुरक्षित रहता है, लेकिन इसके बदलने पर री-रेंडर नहीं होता। डोम (DOM) को सीधे एक्सेस करने के लिए यह सबसे अच्छा है।",
@@ -169,7 +199,12 @@ function Parent() {
       title: 'useContext & Context API',
       level: 'Advanced',
       badge: 'badge-purple',
-      summary: 'The Context API provides a way to pass data through the component tree without having to pass props down manually at every level ("prop drilling"). You create context with `React.createContext()` and provide it using `<Context.Provider value={data}>`. Any deeply nested component can consume it using `useContext(Context)`. While great for global data like themes or auth, it can cause performance issues because any change to the Provider\'s value will re-render ALL consuming components. To optimize, split contexts (e.g., AuthContext, ThemeContext) or memoize the provider value.',
+      summary: `The Context API provides a way to pass data through the component tree without having to pass props down manually.
+
+• Prop Drilling: The process of passing props down manually at every level, which Context API avoids.
+• Provider: Created with React.createContext() and used to provide data to nested components.
+• useContext: Hook used by deeply nested components to consume context data.
+• Performance Optimization: Splitting contexts or memoizing the provider value to prevent re-rendering all consuming components.`,
       native: {
         Hinglish: "Props ko baar baar pass karne (prop drilling) se bachne ke liye Context use karte hain. Jaise ghar ka WiFi, ek router se sab connect hote hain.",
         Hindi: "प्रॉप्स को बार-बार पास करने से बचने के लिए कॉन्टेक्स्ट का उपयोग होता है। यह घर के वाई-फाई की तरह है, जिससे सभी जुड़े रहते हैं।",
@@ -206,7 +241,12 @@ function DeepChild() {
       title: 'useMemo, useCallback & React.memo',
       level: 'Advanced',
       badge: 'badge-purple',
-      summary: 'These are optimization tools. `React.memo` is a higher-order component that prevents a component from re-rendering if its props haven\'t changed (shallow comparison). `useMemo` caches the RESULT of an expensive calculation so it\'s not recomputed on every render. `useCallback` caches a FUNCTION definition between renders. In JavaScript, two identical functions are not referentially equal. If you pass a newly created function as a prop to a `React.memo` child, it breaks the memoization. `useCallback` fixes this by preserving the function reference unless dependencies change. Do not overuse them, as memoization itself has a cost.',
+      summary: `These are optimization tools to prevent unnecessary re-renders.
+
+• React.memo: A higher-order component that prevents a component from re-rendering if its props haven't changed.
+• useMemo: Caches the result of an expensive calculation so it is not recomputed on every render.
+• useCallback: Caches a function definition between renders to preserve referential equality.
+• Memoization Cost: The overhead associated with using these tools, meaning they should not be overused.`,
       native: {
         Hinglish: "Faltu re-renders rokne ke liye ye tools hain. useMemo heavy calculations save karta hai, aur useCallback functions ko baar baar banne se rokata hai.",
         Hindi: "अनावश्यक री-रेंडर रोकने के लिए ये टूल हैं। useMemo भारी गणनाओं को सेव करता है, और useCallback फंक्शन्स को बार-बार बनने से रोकता है।",
@@ -238,7 +278,12 @@ const MemoizedChild = React.memo(ChildComponent);`,
       title: 'useReducer & State Management',
       level: 'Advanced',
       badge: 'badge-purple',
-      summary: '`useReducer` is an alternative to `useState` for complex state logic that involves multiple sub-values or when the next state depends on the previous one. It follows the Redux pattern. You define a reducer function `(state, action) => newState`. The component calls `dispatch({ type: "ACTION", payload: data })` to trigger state changes. This decouples the state update logic from the component rendering logic, making it easier to test. It is highly recommended when you find yourself managing multiple related `useState` variables that update together.',
+      summary: `useReducer is an alternative to useState for complex state logic.
+
+• Reducer Function: A function (state, action) => newState that determines how state changes.
+• Dispatch: Called with an action object to trigger state changes.
+• Decoupling: Separates state update logic from component rendering logic, making testing easier.
+• Related State: Highly recommended for managing multiple related state variables that update together.`,
       native: {
         Hinglish: "Jab state bohot complex ho jaye, tab useReducer use karo. Ye ek strict manager (reducer) banata hai jo sirf specific rules (actions) se state change karta hai.",
         Hindi: "जब स्टेट बहुत जटिल हो जाए, तो useReducer का उपयोग करें। यह नियमों (एक्शन्स) के आधार पर स्टेट को सुरक्षित रूप से अपडेट करता है।",
@@ -274,7 +319,11 @@ function Counter() {
       title: 'Custom Hooks',
       level: 'Advanced',
       badge: 'badge-purple',
-      summary: 'Custom Hooks let you extract component logic into reusable functions. A custom hook is just a JavaScript function whose name starts with "use" and that calls other Hooks. They allow you to share stateful logic, not state itself (each call to a hook gets isolated state). Common examples include `useFetch` (for API calls), `useLocalStorage` (syncing state with local storage), and `useWindowSize`. The rules of hooks apply: only call them at the top level (no loops/conditions) and only from React functions or other custom hooks.',
+      summary: `Custom Hooks let you extract component logic into reusable functions.
+
+• Naming Convention: Must be a JavaScript function whose name starts with "use".
+• Shared Logic: Allows sharing of stateful logic, but not state itself (each call gets isolated state).
+• Rules of Hooks: Must only be called at the top level and only from React functions or other custom hooks.`,
       native: {
         Hinglish: "Custom hooks apni khud ki factory banane jaisa hai jisme React hooks use hote hain. Code reuse karne ka sabse best tareeka hai.",
         Hindi: "कस्टम हुक्स कोड को बार-बार इस्तेमाल करने का सबसे अच्छा तरीका है। यह आपकी अपनी फैक्ट्री बनाने जैसा है जिसमें रिएक्ट हुक्स काम करते हैं।",
@@ -309,7 +358,14 @@ function useDebounce(value, delay) {
       title: 'React Router v6',
       level: 'Intermediate',
       badge: 'badge-purple',
-      summary: 'React Router v6 is the standard routing library. You wrap your app in a `<BrowserRouter>`. You define routes using `<Routes>` and `<Route path="..." element={<Component />} />`. To navigate without full page reloads, use `<Link to="...">` or `<NavLink>` (for active styling). For programmatic navigation, use the `useNavigate()` hook. Dynamic URL parameters are accessed via the `useParams()` hook (e.g., `/users/:id`). Protected routes are implemented by creating a wrapper component that checks authentication status and uses `<Navigate to="/login" replace />` if unauthenticated, otherwise rendering `<Outlet />` for nested routes.',
+      summary: `React Router v6 is the standard routing library for React applications.
+
+• BrowserRouter: The wrapper component for your application to enable routing.
+• Routes and Route: Components used to define mappings between URL paths and UI elements.
+• Link and NavLink: Components used to navigate without full page reloads.
+• useNavigate: Hook for programmatic navigation.
+• useParams: Hook to access dynamic URL parameters.
+• Protected Routes: Implemented using a wrapper component and Navigate for redirection.`,
       native: {
         Hinglish: "React Router single page application me alag-alag pages dikhane ka kaam karta hai. Bina page load kiye URL change karna iska main feature hai.",
         Hindi: "रिएक्ट राउटर बिना पेज रीलोड किए विभिन्न पेजों (URL) पर जाने में मदद करता है। यह सिंगल पेज एप्लिकेशन की जान है।",
@@ -348,14 +404,13 @@ function Home() {
       title: 'React Query (TanStack Query)',
       level: 'Intermediate',
       badge: 'badge-amber',
-      summary: `React Query (now TanStack Query) is a powerful data synchronization and server-state management library for React. Traditional state management libraries like Redux are great for client state (like dark mode or UI toggles), but server state is fundamentally different—it is persisted remotely, requires asynchronous APIs, and can become out of sync.
-      
-- **useQuery**: Used to fetch data. It handles loading, error, and data states automatically.
-- **useMutation**: Used for creating, updating, or deleting data.
-- **Caching & Stale Time**: It caches responses and serves them instantly on subsequent requests. 'staleTime' determines how long the data remains fresh before a background refetch is triggered.
-- **Background Refetches**: It can refetch data when the window regains focus or the network reconnects.
+      summary: `React Query (now TanStack Query) is a powerful data synchronization and server-state management library for React.
 
-Interview Trap: Confusing \`staleTime\` (when data is considered old and needs refetching) with \`cacheTime\` (how long inactive data stays in memory before being garbage collected). Always know the difference!`,
+• useQuery: Used to fetch data and automatically handle loading, error, and data states.
+• useMutation: Used for creating, updating, or deleting data.
+• Caching & Stale Time: Caches responses and serves them instantly; staleTime determines freshness.
+• Background Refetches: Automatically refetches data on window focus or network reconnect.
+• Interview Trap: Confusing staleTime (when data is old) with cacheTime (how long inactive data stays in memory).`,
       native: {
         Hinglish: "React Query ek smart assistant ki tarah hai jo data laata hai aur cache karta hai. Baar baar server se same data maangne ke bajaye, ye saved copy dikhata hai aur background me update kar leta hai."
       },
@@ -410,17 +465,12 @@ function Todos() {
       title: 'Error Boundaries',
       level: 'Intermediate',
       badge: 'badge-amber',
-      summary: `Error Boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI instead of crashing the whole component tree. 
+      summary: `Error Boundaries are React components that catch JavaScript errors in their child component tree.
 
-- **componentDidCatch & getDerivedStateFromError**: These lifecycle methods are required to make a class component an Error Boundary.
-- **Fallback UI**: You can render a customized error message or a generic "Something went wrong" component.
-- **What they DON'T catch**: Error boundaries do not catch errors for:
-  1. Event handlers (use regular try/catch block)
-  2. Asynchronous code (e.g., setTimeout or requestAnimationFrame callbacks)
-  3. Server side rendering
-  4. Errors thrown in the error boundary itself (rather than its children)
-
-Interview Edge Case: In function components, you cannot write an Error Boundary directly because there is no hook equivalent for \`componentDidCatch\`. You must use a Class Component or a library like \`react-error-boundary\`.`,
+• Lifecycle Methods: componentDidCatch and getDerivedStateFromError are required to make a class component an Error Boundary.
+• Fallback UI: A customized error message displayed instead of crashing the component tree.
+• Limitations: They do not catch errors in event handlers, asynchronous code, server-side rendering, or within the boundary itself.
+• Interview Edge Case: Function components cannot be Error Boundaries directly as there is no hook equivalent for componentDidCatch.`,
       native: {
         Hinglish: "Error Boundary building ke fuse-box jaisa kaam karta hai. Agar kisi room (component) me short-circuit (error) ho, toh pura ghar dark hone ke bajaye sirf us room ki light jaati hai aur backup chal jaata hai."
       },
@@ -473,14 +523,13 @@ class ErrorBoundary extends React.Component {
       title: 'React.lazy & Suspense',
       level: 'Intermediate',
       badge: 'badge-amber',
-      summary: `As React applications grow, the JavaScript bundle size increases, leading to slower initial load times. Code splitting is a technique to split your code into smaller chunks which can then be loaded on demand.
+      summary: `Code splitting is a technique to split your code into smaller chunks to improve load times.
 
-- **React.lazy**: Lets you render a dynamic import as a regular component. It automatically handles the code splitting of the component.
-- **Suspense**: A component that lets you specify the loading indicator (fallback UI) in case some components in the tree below it are not yet ready to render.
-- **Dynamic Imports**: Under the hood, \`React.lazy\` takes a function that must call a dynamic \`import()\`. This must return a Promise which resolves to a module with a \`default\` export containing a React component.
-- **Loading States**: Placing \`Suspense\` higher in the component tree allows you to show a single loading state for multiple lazy components.
-
-Interview Context: Understand how this impacts Webpack bundle splitting and improves the Time to Interactive (TTI) metric for end users.`,
+• React.lazy: Lets you render a dynamic import as a regular component, handling code splitting automatically.
+• Suspense: A component that specifies a loading indicator (fallback UI) while child components are not yet ready.
+• Dynamic Imports: React.lazy requires a function calling a dynamic import() that resolves to a module with a default export.
+• Loading States: Placing Suspense higher in the tree allows a single loading state for multiple lazy components.
+• Interview Context: Impacts Webpack bundle splitting and improves the Time to Interactive (TTI) metric.`,
       native: {
         Hinglish: "Jaise online streaming me thoda buffer hota hai aage ka video load hone tak. React.lazy aur Suspense heavy components ko tabhi load karte hain jab zarurat ho, aur tab tak loading spinner dikhate hain."
       },
@@ -520,13 +569,13 @@ export default Dashboard;`,
       title: 'Portals & Refs Forwarding',
       level: 'Advanced',
       badge: 'badge-violet',
-      summary: `Sometimes you need to render a child node outside of the DOM hierarchy of the parent component, or expose a child's DOM node to a parent.
+      summary: `Sometimes you need to render outside the parent's DOM hierarchy or expose a child's DOM node.
 
-- **createPortal**: Renders a React component into a different part of the DOM (e.g., directly into \`document.body\`). This is highly useful for Modals, Tooltips, and Dropdowns where CSS constraints like \`overflow: hidden\` or \`z-index\` on parent elements would clip or hide the overlay. Event bubbling still works exactly the same in the React tree!
-- **forwardRef**: By default, React does not allow passing a \`ref\` as a prop. \`forwardRef\` allows a component to receive a \`ref\` and pass it down to a child DOM element.
-- **useImperativeHandle**: Customizes the instance value that is exposed to parent components when using \`ref\`. Instead of exposing the entire DOM node, you can expose only specific methods (like \`focus\` or \`scrollIntoView\`).
-
-Interview Edge Case: Remember that although a portal renders its children in a different DOM node, it behaves like a normal React child. Actions like Context API and Event Bubbling work seamlessly across the portal.`,
+• createPortal: Renders a component into a different part of the DOM, useful for Modals and Tooltips.
+• Event Bubbling: Works identically through portals despite being in a different DOM node.
+• forwardRef: Allows a component to receive a ref and pass it down to a child DOM element.
+• useImperativeHandle: Customizes the instance value exposed to parent components when using refs.
+• Interview Edge Case: A portal behaves like a normal React child for Context API and Event Bubbling.`,
       native: {
         Hinglish: "Portal ek jaadui darwaza hai. Component bhale hi div ke andar banaya ho, portal use karke use direct body me bhej sakte hain (Modals ke liye best). forwardRef parent ko child ka control deta hai."
       },
@@ -577,13 +626,12 @@ function App() {
       title: 'State Management: Zustand vs Redux vs Context',
       level: 'Advanced',
       badge: 'badge-violet',
-      summary: `Global state management is crucial for large applications. Choosing the right tool impacts performance and developer experience.
+      summary: `Global state management tools impact application performance and developer experience.
 
-- **Context API**: Best for low-frequency updates like themes, user authentication, or language preferences. It is built-in but can cause unnecessary re-renders of all consumers when state changes.
-- **Redux Toolkit (RTK)**: The industry standard for complex, high-frequency state updates. It enforces a strict unidirectional data flow, immutable state updates (via Immer), and has excellent dev-tools. Great for enterprise apps but has some boilerplate.
-- **Zustand**: A fast, minimalistic, and modern state management solution. It uses hooks, requires zero boilerplate, doesn't wrap your app in providers, and handles transient updates (like animations) without re-rendering everything.
-
-Interview Tip: Be prepared to justify why you would choose Zustand over Redux (less boilerplate, simpler API) or Context over Redux (built-in, no external dependencies, simple needs).`,
+• Context API: Built-in solution best for low-frequency updates like themes, though it can cause unnecessary re-renders.
+• Redux Toolkit (RTK): Industry standard for complex, high-frequency updates with strict unidirectional data flow.
+• Zustand: Fast, minimalistic state management that uses hooks, requires zero boilerplate, and prevents unnecessary re-renders.
+• Interview Tip: Be prepared to justify choosing Zustand over Redux (simpler API) or Context over Redux (no external dependencies).`,
       native: {
         Hinglish: "Context chhote kaamo ke liye hai jaise theme change. Redux bada manager hai jo sab control karta hai par thoda strict hai. Zustand naya smart manager hai jo bina kisi jhanjhat ke fast kaam karta hai."
       },
@@ -627,14 +675,13 @@ function Controls() {
       title: 'React Testing Library',
       level: 'Advanced',
       badge: 'badge-violet',
-      summary: `React Testing Library (RTL) focuses on testing components from the user's perspective rather than testing implementation details.
+      summary: `React Testing Library (RTL) focuses on testing components from the user's perspective.
 
-- **Core Philosophy**: "The more your tests resemble the way your software is used, the more confidence they can give you."
-- **Queries**: RTL provides queries to find elements on the page (e.g., \`getByRole\`, \`findByText\`, \`queryByTestId\`). \`getBy*\` throws an error if not found, \`queryBy*\` returns null (useful for testing absence), and \`findBy*\` returns a Promise (for async elements).
-- **userEvent vs fireEvent**: \`userEvent\` simulates real user interactions (like clicking, typing, tabbing) more realistically than the older \`fireEvent\`.
-- **Async Testing**: Use \`waitFor\` or \`findBy\` queries when testing components that fetch data or change state asynchronously.
-
-Interview Focus: Explain why finding elements by ARIA roles (\`getByRole\`) is preferred over finding by class names or test IDs, as it promotes accessibility.`,
+• Core Philosophy: Tests should resemble how software is used to provide confidence.
+• Queries: Functions like getByRole or findByText used to find elements on the page.
+• userEvent vs fireEvent: userEvent simulates real user interactions more realistically than fireEvent.
+• Async Testing: Uses waitFor or findBy queries for testing asynchronous state changes.
+• Interview Focus: Using ARIA roles (getByRole) is preferred as it promotes accessibility.`,
       native: {
         Hinglish: "RTL testing ka naya standard hai. Isme hum internal code nahi check karte, balki ye dekhte hain ki user ko button click karne ke baad sahi message dikh raha hai ya nahi. Jaise car chalate waqt steering check karna, na ki engine ke parts."
       },
@@ -679,14 +726,13 @@ test('shows error message on invalid credentials', async () => {
       title: 'Vitest & Jest Setup',
       level: 'Intermediate',
       badge: 'badge-amber',
-      summary: `Jest and Vitest are JavaScript testing frameworks used as test runners for React applications. While Jest has been the industry standard for years, Vitest is rapidly gaining popularity due to its incredible speed and native ES Module support, especially in Vite-based projects.
+      summary: `Jest and Vitest are popular JavaScript testing frameworks and test runners.
 
-- **Test Runner**: They execute the test files, provide assertion functions (like \`expect()\`), and output pass/fail results.
-- **Mocking**: Crucial for isolating components. You can mock entire modules (like \`axios\`), or specific functions to return fake data instead of making real network requests.
-- **Spies**: Functions like \`jest.fn()\` or \`vi.fn()\` allow you to track if a function was called, how many times it was called, and with what arguments.
-- **Best Practices**: Avoid testing implementation details (like internal state values). Mock external dependencies rigorously to keep unit tests fast and deterministic.
-
-Interview Insight: Understand the difference between a Test Runner (Jest/Vitest) and a Testing Utility (React Testing Library).`,
+• Test Runner: Executes test files, provides assertion functions, and outputs pass/fail results.
+• Mocking: Isolating components by replacing modules or functions with fake data to avoid real network requests.
+• Spies: Functions that track if, how often, and with what arguments a function was called.
+• Best Practices: Avoid testing implementation details and mock external dependencies for deterministic tests.
+• Interview Insight: Understand the difference between a Test Runner and a Testing Utility.`,
       native: {
         Hinglish: "Jest aur Vitest judge ki tarah hain jo aapke code ka test lete hain. Mocking ka matlab hai asli API ki jagah duplicate (fake) API use karna taaki test fast ho aur internet ki zarurat na pade."
       },
@@ -730,15 +776,13 @@ describe('User Module', () => {
       title: 'Next.js Fundamentals',
       level: 'Advanced',
       badge: 'badge-violet',
-      summary: `Next.js is a React framework for production that provides hybrid static & server rendering, smart bundling, and route pre-fetching.
+      summary: `Next.js is a React framework for production providing hybrid static and server rendering.
 
-- **SSR (Server-Side Rendering)**: Pages are generated on the server on each request. Great for dynamic data and SEO.
-- **SSG (Static Site Generation)**: Pages are generated at build time. Extremely fast and cacheable. Best for blogs or documentation.
-- **ISR (Incremental Static Regeneration)**: Allows you to update static pages in the background without rebuilding the entire site.
-- **App Router**: The newer paradigm in Next.js 13+ utilizing React Server Components (RSC) by default. It moves away from the old \`pages/\` directory structure.
-- **Server Components**: Render entirely on the server and send zero JavaScript to the client, massively reducing bundle sizes.
-
-Interview Strategy: Be able to clearly articulate the trade-offs between Client-Side Rendering (CSR), SSR, and SSG, particularly regarding SEO, TTFB (Time to First Byte), and bundle size.`,
+• SSR (Server-Side Rendering): Pages generated on the server on each request, ideal for dynamic data and SEO.
+• SSG (Static Site Generation): Pages generated at build time, highly cacheable and fast.
+• ISR (Incremental Static Regeneration): Updates static pages in the background without rebuilding the whole site.
+• App Router: The modern Next.js 13+ paradigm using React Server Components by default.
+• Server Components: Render exclusively on the server, sending zero JavaScript to the client.`,
       native: {
         Hinglish: "Normal React (CSR) client ko kachcha khana bhejta hai jo browser me pakta hai. Next.js (SSR/SSG) server pe hi khana paka kar ready bhejta hai, jisse website fast khulti hai aur Google ko samajh aati hai (SEO)."
       },
@@ -781,15 +825,13 @@ export default async function Page() {
       title: 'React Performance Profiling',
       level: 'Advanced',
       badge: 'badge-violet',
-      summary: `Identifying and fixing performance bottlenecks is a critical skill for senior React developers.
+      summary: `Identifying and fixing performance bottlenecks is critical for React applications.
 
-- **React DevTools Profiler**: A browser extension that records how long components take to render, why they rendered, and helps identify unnecessary re-renders.
-- **Flamegraph**: A visual representation in the Profiler showing the component tree and render times. Wider/yellower bars indicate expensive renders.
-- **Why did this render?**: The Profiler can pinpoint exactly which prop or state change triggered a render.
-- **Avoiding Re-renders**: Common fixes include moving state down the tree, utilizing \`React.memo\`, extracting expensive calculations to \`useMemo\`, or fixing unstable references with \`useCallback\`.
-- **Lighthouse**: A tool built into Chrome to measure overall Web Vitals (LCP, FID, CLS).
-
-Interview Trap: Premature optimization. Don't add \`useMemo\` to everything. Only optimize when you have identified an actual bottleneck using the Profiler.`,
+• React DevTools Profiler: Browser extension recording component render times and reasons for unnecessary re-renders.
+• Flamegraph: Visual representation of the component tree and render times where wider bars indicate expensive renders.
+• Avoiding Re-renders: Techniques include moving state down, or using React.memo, useMemo, and useCallback.
+• Lighthouse: Tool built into Chrome to measure overall Web Vitals (LCP, FID, CLS).
+• Interview Trap: Premature optimization; avoid overusing useMemo before identifying an actual bottleneck.`,
       native: {
         Hinglish: "React Profiler ek doctor ke stethoscope ki tarah hai. Ye check karta hai ki kaunsa component faltu me baar baar render ho raha hai aur app ko slow kar raha hai. Bina check kiye useMemo lagana nuksan dayak ho sakta hai."
       },
@@ -836,15 +878,13 @@ function App() {
       title: 'Accessibility (a11y) in React',
       level: 'Intermediate',
       badge: 'badge-amber',
-      summary: `Accessibility (a11y) ensures that web applications are usable by everyone, including people with disabilities who rely on screen readers or keyboard navigation.
+      summary: `Accessibility (a11y) ensures web applications are usable by everyone, including those with disabilities.
 
-- **Semantic HTML**: Always use correct HTML tags (\`<nav>\`, \`<button>\`, \`<main>\`) instead of plain \`<div>\`s. Semantic tags provide built-in keyboard navigation and screen reader support.
-- **ARIA Roles**: When you must build custom UI (like a custom dropdown or modal), use ARIA attributes (\`aria-expanded\`, \`aria-hidden\`, \`role="dialog"\`) to communicate state to assistive technologies.
-- **Keyboard Navigation**: Ensure all interactive elements are reachable via the Tab key and usable with Enter/Space. Avoid positive \`tabindex\`.
-- **Focus Management**: When a modal opens, focus should move into it and be trapped there. When it closes, focus should return to the button that opened it. React refs are crucial for managing focus dynamically.
-- **alt Text**: Always provide meaningful \`alt\` text for images.
-
-Interview Focus: Many candidates ignore a11y. Knowing how to build an accessible custom modal or dropdown will strongly distinguish you.`,
+• Semantic HTML: Using correct tags (e.g., <nav>, <button>) to provide built-in keyboard navigation and screen reader support.
+• ARIA Roles: Attributes used in custom UI to communicate state to assistive technologies.
+• Keyboard Navigation: Ensuring interactive elements are reachable via Tab and usable with Enter/Space.
+• Focus Management: Properly managing focus movement (e.g., trapping it in a modal) using React refs.
+• alt Text: Providing meaningful descriptive text for images.`,
       native: {
         Hinglish: "Accessibility ka matlab hai website ko sabke liye banana, unke liye bhi jo mouse nahi use kar sakte ya dekh nahi sakte. Har button keyboard se dabna chahiye aur screen reader usko padh paana chahiye."
       },
@@ -900,6 +940,8 @@ function AccessibleModal({ isOpen, onClose }) {
         correct: 1,
         explanation: 'When a modal opens, focus must be shifted into the modal (and trapped there) so users relying on keyboards or screen readers don\'t accidentally interact with the obscured background content.'
       }
+    }
+      ]
     }
   ]
 };

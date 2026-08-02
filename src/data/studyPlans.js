@@ -1,27 +1,31 @@
 export const STUDY_PLANS = {
   'crash': {
     id: 'crash',
-    name: 'Crash Course',
-    emoji: '⚡',
+    name: '1-Day Crash Sprint',
+    iconName: 'Zap',
     duration: 1,
     durationLabel: '1 Day',
-    topicsPerDay: 131,
-    description: 'Speed-run through all concepts. Summary-only mode. Perfect for last-minute revision.',
-    features: ['Summary reading', 'Key points only', 'No deep dives'],
+    targetTopicCount: 20,
+    topicsPerDay: 20,
+    allowedImportance: ['high'],
+    description: 'Focus ONLY on the top 20 highest-yielding placement questions. Zero fluff, maximum ROI.',
+    features: ['Top 20 High-Yield Core Topics', 'Key placement questions', 'Quick revision mode'],
     skipCode: true,
     skipQuiz: false,
     revisionCycles: 0,
-    mockInterviews: 0,
+    mockInterviews: 1,
   },
   'sprint': {
     id: 'sprint',
-    name: 'Sprint Mode',
-    emoji: '🔥',
+    name: '10-Day Sprint',
+    iconName: 'Flame',
     duration: 10,
     durationLabel: '10 Days',
-    topicsPerDay: 13,
-    description: 'Intensive 10-day bootcamp. Cover all tracks with focused practice.',
-    features: ['Full lessons', 'Code examples', 'Quick quizzes', 'Key visualizers'],
+    targetTopicCount: 45,
+    topicsPerDay: 4.5,
+    allowedImportance: ['high', 'medium'],
+    description: 'Intensive 10-day bootcamp covering 45 core and medium placement topics.',
+    features: ['45 Curated High & Medium Topics', 'Code examples & quizzes', 'Visualizers', 'Mock interview'],
     skipCode: false,
     skipQuiz: false,
     revisionCycles: 1,
@@ -29,13 +33,15 @@ export const STUDY_PLANS = {
   },
   'standard': {
     id: 'standard',
-    name: 'Standard Plan',
-    emoji: '📚',
+    name: '30-Day Placement Ready',
+    iconName: 'BookOpen',
     duration: 30,
     durationLabel: '1 Month',
-    topicsPerDay: 5,
-    description: 'Balanced month-long preparation. Full lessons with practice and revision.',
-    features: ['Full lessons', 'Code practice', 'Quizzes', 'Visualizers', 'Weekly revision'],
+    targetTopicCount: 75,
+    topicsPerDay: 2.5,
+    allowedImportance: ['high', 'medium', 'standard'],
+    description: 'Balanced month-long preparation. Covers 75 comprehensive topics with full practice.',
+    features: ['75 Comprehensive Topics', 'Full code practice', 'Quizzes & Sandboxes', '2 Mock interviews'],
     skipCode: false,
     skipQuiz: false,
     revisionCycles: 2,
@@ -43,13 +49,15 @@ export const STUDY_PLANS = {
   },
   'thorough': {
     id: 'thorough',
-    name: 'Thorough Prep',
-    emoji: '🎯',
+    name: 'Thorough 6-Month Prep',
+    iconName: 'Target',
     duration: 180,
     durationLabel: '6 Months',
+    targetTopicCount: 105,
     topicsPerDay: 1,
-    description: 'Deep preparation with spaced repetition, mock interviews, and mastery tracking.',
-    features: ['Deep lessons', 'Full code tracing', 'Spaced repetition', 'Mock interviews', 'Notes'],
+    allowedImportance: ['high', 'medium', 'standard'],
+    description: 'Deep preparation across all 105+ topics with spaced repetition and portfolio tracking.',
+    features: ['All 105+ Topics', 'Spaced repetition', '6 Mock interviews', 'Notes & Sandboxes'],
     skipCode: false,
     skipQuiz: false,
     revisionCycles: 4,
@@ -57,13 +65,15 @@ export const STUDY_PLANS = {
   },
   'mastery': {
     id: 'mastery',
-    name: 'Mastery Path',
-    emoji: '🏆',
+    name: '1-Year Engineering Mastery',
+    iconName: 'Trophy',
     duration: 365,
     durationLabel: '1 Year',
+    targetTopicCount: 105,
     topicsPerDay: 0.5,
-    description: 'Ultimate mastery. Deep practice every concept, weekly mocks, multiple revision cycles.',
-    features: ['Deep lessons', 'Practice problems', 'Weekly mocks', 'Spaced repetition', 'Portfolio building'],
+    allowedImportance: ['high', 'medium', 'standard'],
+    description: 'Complete technical & architectural mastery. All topics, weekly mocks, multiple revisions.',
+    features: ['All 105+ Topics', 'Deep System Design', '12 Mock interviews', 'Spaced repetition'],
     skipCode: false,
     skipQuiz: false,
     revisionCycles: 6,
@@ -71,10 +81,35 @@ export const STUDY_PLANS = {
   },
 };
 
-export function generateDailySchedule(planId, allTopics, dayNumber) {
-  const plan = STUDY_PLANS[planId];
-  if (!plan) return allTopics;
-  const perDay = Math.ceil(allTopics.length / plan.duration);
-  const start = (dayNumber - 1) * perDay;
-  return allTopics.slice(start, start + perDay);
+const IMPORTANCE_WEIGHTS = { high: 3, medium: 2, standard: 1 };
+
+/**
+ * Returns topics curated and sorted by importance weight for a specific study plan.
+ */
+export function getCuratedPlanTopics(planId, allTopics = []) {
+  const plan = STUDY_PLANS[planId] || STUDY_PLANS.standard;
+  if (!allTopics || allTopics.length === 0) return [];
+
+  // Sort topics by importance weight (high > medium > standard)
+  const sortedTopics = [...allTopics].sort((a, b) => {
+    const impA = a.importance || (a.level === 'Beginner' ? 'high' : a.level === 'Intermediate' ? 'medium' : 'standard');
+    const impB = b.importance || (b.level === 'Beginner' ? 'high' : b.level === 'Intermediate' ? 'medium' : 'standard');
+    return (IMPORTANCE_WEIGHTS[impB] || 1) - (IMPORTANCE_WEIGHTS[impA] || 1);
+  });
+
+  // Return the curated subset up to targetTopicCount
+  return sortedTopics.slice(0, plan.targetTopicCount || allTopics.length);
 }
+
+/**
+ * Generates the daily schedule topics for a specific day in the plan.
+ */
+export function generateDailySchedule(planId, allTopics = [], dayNumber = 1) {
+  const plan = STUDY_PLANS[planId] || STUDY_PLANS.standard;
+  const curatedTopics = getCuratedPlanTopics(planId, allTopics);
+  
+  const perDay = Math.max(1, Math.ceil(curatedTopics.length / plan.duration));
+  const start = (dayNumber - 1) * perDay;
+  return curatedTopics.slice(start, start + perDay);
+}
+

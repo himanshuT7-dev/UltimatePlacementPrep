@@ -2,7 +2,7 @@ export const TRACKS = [
   {
     id: 'java',
     label: 'Java Ecosystem',
-    icon: '☕',
+    icon: 'java',
     color: '#f59e0b',
     activeClass: 'active-java',
     desc: 'From Basic Syntax → OOP → Collections → Multithreading → JDBC → Hibernate → Spring Boot',
@@ -421,7 +421,7 @@ public class StudentController {
   {
     id: 'sql',
     label: 'SQL & Databases',
-    icon: '🛢️',
+    icon: 'sql',
     color: '#10b981',
     desc: 'DDL/DML → Joins → Subqueries → CTEs → Window Functions → Query Optimization',
     modules: [
@@ -562,7 +562,7 @@ FROM employees;`,
   {
     id: 'javascript',
     label: 'JavaScript',
-    icon: '⚡',
+    icon: 'javascript',
     color: '#0ea5e9',
     desc: 'V8 Engine → Scope & Closures → Prototypes → Event Loop → Promises → ES6+',
     modules: [
@@ -734,7 +734,7 @@ introduce.call({ name: "Ananya" }); // "I am Ananya"`,
   {
     id: 'react',
     label: 'React.js',
-    icon: '⚛️',
+    icon: 'react',
     color: '#8b5cf6',
     desc: 'Virtual DOM → Fiber → All Hooks → State Management → Router → Performance',
     modules: [
@@ -849,7 +849,7 @@ function App() {
   {
     id: 'communication',
     label: 'Communication & HR',
-    icon: '🎙️',
+    icon: 'communication',
     color: '#f43f5e',
     desc: 'Technical Vocabulary → STAR Method → English Fluency → AI Voice Mock Interviews',
     modules: [
