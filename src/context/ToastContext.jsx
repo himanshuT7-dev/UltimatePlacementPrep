@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Sparkles, XCircle, Bell } from 'lucide-react';
 
 const ToastContext = createContext();
 
@@ -8,8 +8,9 @@ export const ToastProvider = ({ children }) => {
 
   const showToast = useCallback((message, type = 'success', duration = 3000) => {
     const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, message, type }]);
-    
+    // Cap the visible stack (keep the last ~4) to prevent viewport overflow.
+    setToasts(prev => [...prev, { id, message, type }].slice(-4));
+
     if (duration > 0) {
       setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id));
@@ -24,18 +25,23 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div style={{
-        position: 'fixed',
-        bottom: 24,
-        right: 24,
-        zIndex: 99999,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-        pointerEvents: 'none' // Let clicks pass through if empty
-      }}>
+      <div
+        className="toast-viewport"
+        role="status"
+        aria-live="polite"
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          zIndex: 99999,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          pointerEvents: 'none' // Let clicks pass through if empty
+        }}
+      >
         {toasts.map(t => (
-          <div key={t.id} className="toast-anim" style={{
+          <div key={t.id} role={t.type === 'error' ? 'alert' : undefined} className="toast-anim" style={{
             background: 'linear-gradient(165deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))',
             border: `1px solid ${t.type === 'success' ? 'rgba(52, 211, 153, 0.3)' : t.type === 'error' ? 'rgba(244, 63, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
             padding: '12px 20px',
@@ -49,9 +55,9 @@ export const ToastProvider = ({ children }) => {
             pointerEvents: 'auto', // Re-enable clicks for the toast
             backdropFilter: 'blur(10px)',
           }}>
-            {t.type === 'success' && <span style={{ color: '#34d399' }}>✨</span>}
-            {t.type === 'error' && <span style={{ color: '#f43f5e' }}>❌</span>}
-            {t.type === 'info' && <span style={{ color: '#f59e0b' }}>🔔</span>}
+            {t.type === 'success' && <Sparkles size={16} color="#34d399" />}
+            {t.type === 'error' && <XCircle size={16} color="#f43f5e" />}
+            {t.type === 'info' && <Bell size={16} color="#f59e0b" />}
             <span style={{ fontWeight: 500 }}>{t.message}</span>
             <button 
               onClick={() => removeToast(t.id)}

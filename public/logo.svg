@@ -1,0 +1,35 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark Titanium Background -->
+  <rect width="256" height="256" rx="64" fill="url(#bg-gradient)" />
+  
+  <!-- Outer Gold Ring -->
+  <circle cx="128" cy="128" r="90" stroke="url(#gold-gradient)" stroke-width="8" fill="none" opacity="0.9" />
+  
+  <!-- Violet Glow Backing -->
+  <circle cx="128" cy="128" r="80" fill="url(#glow-gradient)" opacity="0.85" />
+  
+  <!-- Up Arrow / Rocket Shape -->
+  <path d="M128 56L152 96H136V160H120V96H104L128 56Z" fill="url(#gold-gradient)" />
+  
+  <!-- Code Brackets -->
+  <path d="M64 112L40 128L64 144" stroke="url(#gold-gradient)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M192 112L216 128L192 144" stroke="url(#gold-gradient)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Star Accent -->
+  <circle cx="128" cy="192" r="10" fill="#f59e0b" opacity="0.9" />
+  
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#080c14" />
+    </linearGradient>
+    <linearGradient id="gold-gradient" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <radialGradient id="glow-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#4c1d95" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#090d18" stop-opacity="0.9" />
+    </radialGradient>
+  </defs>
+</svg>
