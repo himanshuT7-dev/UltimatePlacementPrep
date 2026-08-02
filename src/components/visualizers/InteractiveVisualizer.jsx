@@ -1,4 +1,5 @@
 import React from 'react';
+import { Zap } from 'lucide-react';
 import MemoryVisualizer from './MemoryVisualizer';
 import JoinVisualizer from './JoinVisualizer';
 import DSAVisualizer from './DSAVisualizer';
@@ -42,8 +43,8 @@ export default function InteractiveVisualizer({ topic }) {
   // Universal dynamic Concept Flow visualizer fallback for ALL subjects/topics
   return (
     <div className="glass anim-fade" style={{ padding: 24, marginTop: 16, marginBottom: 16 }}>
-      <h3 style={{ marginBottom: 16, color: 'var(--amber)', fontSize: '1.1rem' }}>
-        ⚡ Interactive Concept Flow & Execution Breakdown
+      <h3 style={{ marginBottom: 16, color: 'var(--amber)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Zap size={18} /> Interactive Concept Flow & Execution Breakdown
       </h3>
       <ConceptFlowVisualizer topic={topic} />
     </div>

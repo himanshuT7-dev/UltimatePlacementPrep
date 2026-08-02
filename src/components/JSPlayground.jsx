@@ -35,8 +35,13 @@ export default function JSPlayground({ initialCode }) {
     };
 
     try {
-      const fn = new Function('console', code);
-      fn(customConsole);
+      // Shadow browser globals (window, document, localStorage, fetch, etc.) so
+      // user code that touches them throws instead of running in the page scope.
+      const fn = new Function(
+        'console', 'window', 'document', 'localStorage', 'sessionStorage', 'fetch', 'XMLHttpRequest', 'alert',
+        '"use strict";\n' + code
+      );
+      fn(customConsole, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
       setLogs(captured);
     } catch (err) {
       setError(err.message);
@@ -69,7 +74,7 @@ export default function JSPlayground({ initialCode }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="playground-grid">
         {/* Editor */}
         <div>
           <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6, display: 'block' }}>

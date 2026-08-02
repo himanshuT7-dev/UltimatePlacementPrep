@@ -1,64 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle, CheckCircle2, Languages, Volume2, VolumeX, Sparkles, Lightbulb, BookOpen, Heart } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, AlertTriangle, CheckCircle2, Languages, Volume2, VolumeX, Sparkles, Lightbulb, BookOpen, Heart, RefreshCw } from 'lucide-react';
 import { DiagnosticNode } from '../agents/pipeline';
 import { useAuth } from '../context/AuthContext';
+import { speakText, stopSpeech } from '../utils/speech';
 
 export default function DiagnosticModal({ track, topic, question, chosenIdx, onClose }) {
-  const { nativeLang } = useAuth();
-  const [data,    setData]    = useState(null);
+  const { nativeLang, voiceGender } = useAuth();
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState(null);
   const [speaking, setSpeaking] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const closeBtnRef = useRef(null);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const chosen  = question.options[chosenIdx];
-        const correct = question.options[question.correct];
-        const res = await DiagnosticNode.run(
-          track || 'General',
-          topic,
-          question.question,
-          chosen,
-          correct,
-          nativeLang
-        );
-        if (alive) setData(res);
-      } catch (e) {
-        if (alive) setError(e.message);
-      } finally {
-        if (alive) setLoading(false);
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    setSpeaking(false);
+    stopSpeech();
+
+    const chosen = question.options[chosenIdx];
+    const correct = question.options[question.correct];
+
+    DiagnosticNode.run(track || 'General', topic, question.question, chosen, correct, nativeLang)
+      .then(res => {
+        if (mounted) { setData(res); setLoading(false); }
+      })
+      .catch(err => {
+        if (mounted) {
+          setError(err?.message || 'The AI diagnostic could not be generated. Please try again.');
+          setLoading(false);
+        }
+      });
+
+    return () => { mounted = false; stopSpeech(); };
+  }, [track, topic, question, chosenIdx, nativeLang, retryKey]);
+
+  // Escape-to-close + basic focus management (keep it lightweight)
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeBtnRef.current?.focus();
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
       }
-    })();
-    return () => { alive = false; };
-  }, []);
+    };
+  }, [onClose]);
 
   const toggleSpeech = () => {
     const text = data?.nativeAudio || data?.native;
     if (!text) return;
     if (speaking) {
-      window.speechSynthesis?.cancel();
+      stopSpeech();
       setSpeaking(false);
     } else {
-      window.speechSynthesis?.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.9;
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
       setSpeaking(true);
-      window.speechSynthesis.speak(u);
+      speakText(text, {
+        nativeLang,
+        voiceGender,
+        rate: 0.95,
+        onEnd: () => setSpeaking(false),
+        onError: () => setSpeaking(false)
+      });
     }
   };
 
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box">
-        <button className="modal-close" onClick={onClose}><X size={16} /></button>
+      <div className="modal-box" role="dialog" aria-modal="true" aria-labelledby="diagnostic-modal-title">
+        <button className="modal-close" ref={closeBtnRef} onClick={onClose} aria-label="Close diagnostic"><X size={16} /></button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
           <Sparkles size={22} style={{ color: 'var(--amber)' }} />
-          <h2 className="modal-title">Why Was That Wrong?</h2>
+          <h2 className="modal-title" id="diagnostic-modal-title">Why Was That Wrong?</h2>
         </div>
         <p className="modal-sub">Gemini Pro Diagnostic Breakdown · {nativeLang} Explanation Available</p>
 
@@ -69,10 +87,17 @@ export default function DiagnosticModal({ track, topic, question, chosenIdx, onC
           </div>
         )}
 
-        {error && (
+        {error && !loading && (
           <div className="diag-section flaw">
             <div className="diag-label"><AlertTriangle size={13} /> Error</div>
             <p>{error}</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => setRetryKey(k => k + 1)}
+              style={{ marginTop: 10, padding: '8px 16px', fontSize: '0.8rem' }}
+            >
+              <RefreshCw size={13} /> Retry
+            </button>
           </div>
         )}
 

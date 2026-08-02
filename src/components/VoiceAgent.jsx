@@ -32,6 +32,26 @@ const QUESTIONS = [
   'Explain ACID properties of database transactions with a real-world example.',
 ];
 
+/* ScoreRing lives at module scope so it is a stable component type —
+   defining it inside the render caused 4 SVGs to remount on every keystroke. */
+const ScoreRing = ({ value, color, label }) => {
+  const r = 30, circ = 2 * Math.PI * r;
+  const offset = circ - (value / 100) * circ;
+  return (
+    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <svg width="80" height="80" viewBox="0 0 80 80" role="img" aria-label={`${label} score: ${value}%`}>
+        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255, 255, 255, 0.06)" strokeWidth="6"/>
+        <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
+          strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round" transform="rotate(-90 40 40)"
+          style={{ transition: 'stroke-dashoffset 0.8s ease' }}/>
+        <text x="40" y="44" textAnchor="middle" fill={color} fontSize="14" fontWeight="800">{value}%</text>
+      </svg>
+      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+    </div>
+  );
+};
+
 export default function VoiceAgent() {
   const [qIdx,       setQIdx]       = useState(0);
   const [recording,  setRecording]  = useState(false);
@@ -102,24 +122,6 @@ export default function VoiceAgent() {
       setEval(result);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
-  };
-
-  const ScoreRing = ({ value, color, label }) => {
-    const r = 30, circ = 2 * Math.PI * r;
-    const offset = circ - (value / 100) * circ;
-    return (
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255, 255, 255, 0.06)" strokeWidth="6"/>
-          <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
-            strokeDasharray={circ} strokeDashoffset={offset}
-            strokeLinecap="round" transform="rotate(-90 40 40)"
-            style={{ transition: 'stroke-dashoffset 0.8s ease' }}/>
-          <text x="40" y="44" textAnchor="middle" fill={color} fontSize="14" fontWeight="800">{value}%</text>
-        </svg>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
-      </div>
-    );
   };
 
   return (

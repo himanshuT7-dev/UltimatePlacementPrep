@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, ArrowRight, Check, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
 import { UPPLogo } from './TrackIcons';
+import useDialog from '../hooks/useDialog';
 
 export default function AuthModal({ initialTab = 'signup', onClose, onSuccess }) {
   const [tab,      setTab]      = useState(initialTab); // 'signin' | 'signup'
@@ -19,34 +20,88 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
   const [suErr,    setSuErr]    = useState('');
   const [suLoad,   setSuLoad]   = useState(false);
 
+  const { dialogProps } = useDialog({ onClose });
+
   /* Guest */
   const handleGuest = () => {
     onSuccess({ name: 'Guest Student', email: 'guest@upp.local', isGuest: true });
   };
 
   /* Sign In Submit */
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setSiErr('');
     if (!siEmail.trim() || !siPass.trim()) { setSiErr('Please fill in all fields.'); return; }
     setSiLoad(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: siEmail, password: siPass })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+      
+      localStorage.setItem('upp_auth_token', data.token);
+      onSuccess({ ...data.user, isGuest: false });
+    } catch (err) {
+      setSiErr(err.message);
+    } finally {
       setSiLoad(false);
-      onSuccess({ name: siEmail.split('@')[0], email: siEmail, isGuest: false });
-    }, 600);
+    }
   };
 
+  /* Password validation helper */
+  const validatePassword = (pass) => {
+    return {
+      hasMinLength: pass.length >= 8,
+      hasUpper: /[A-Z]/.test(pass),
+      hasNumber: /[0-9]/.test(pass),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(pass),
+    };
+  };
+
+  /* Computed once per render (was called 4× per keystroke by the checklist). */
+  const suPassValid = validatePassword(suPass);
+
+  /* Derived per-field validation state (from the submit-time top-level error). */
+  const siEmailInvalid = Boolean(siErr && !siEmail.trim());
+  const siPassInvalid  = Boolean(siErr && !siPass.trim());
+  const suNameInvalid  = Boolean(suErr && !suName.trim());
+  const suEmailInvalid = Boolean(suErr && !suEmail.trim());
+  const suPassInvalid  = Boolean(
+    suErr && (suPass.length === 0 || !Object.values(suPassValid).every(Boolean))
+  );
+
   /* Sign Up Submit */
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setSuErr('');
     if (!suName.trim() || !suEmail.trim() || !suPass.trim()) { setSuErr('Please fill in all fields.'); return; }
-    if (suPass.length < 6) { setSuErr('Password must be at least 6 characters.'); return; }
+    
+    const rules = validatePassword(suPass);
+    if (!rules.hasMinLength) { setSuErr('Password must be at least 8 characters long.'); return; }
+    if (!rules.hasUpper) { setSuErr('Password must contain at least 1 uppercase letter.'); return; }
+    if (!rules.hasNumber) { setSuErr('Password must contain at least 1 number.'); return; }
+    if (!rules.hasSpecial) { setSuErr('Password must contain at least 1 special character (!@#$%^&*).'); return; }
+
     setSuLoad(true);
-    setTimeout(() => {
-      setSuLoad(false);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: suEmail, password: suPass, name: suName })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+
+      localStorage.setItem('upp_auth_token', data.token);
       setStep('success');
-    }, 700);
+    } catch (err) {
+      setSuErr(err.message);
+    } finally {
+      setSuLoad(false);
+    }
   };
 
   const handleSuccessDone = () => {
@@ -55,7 +110,12 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
 
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="auth-card glass" style={{ maxWidth: 440, padding: 36, position: 'relative' }}>
+      <div
+        className="auth-card glass"
+        {...dialogProps}
+        aria-labelledby={step === 'success' ? 'auth-modal-success-title' : 'auth-modal-title'}
+        style={{ maxWidth: 440, padding: 36, position: 'relative' }}
+      >
         <button className="modal-close" onClick={onClose} aria-label="Close">
           <X size={16} />
         </button>
@@ -71,7 +131,7 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
               <CheckCircle2 size={28} />
             </div>
 
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>Welcome, {suName}!</h2>
+            <h2 id="auth-modal-success-title" style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 8 }}>Welcome, {suName}!</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 24 }}>
               Your Ultimate Placement Prep account is ready. Your progress will be saved automatically as you complete topics.
             </p>
@@ -87,7 +147,7 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
                 <UPPLogo size={42} />
               </div>
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>
+              <h2 id="auth-modal-title" style={{ fontSize: '1.3rem', fontWeight: 800 }}>
                 {tab === 'signin' ? 'Welcome Back' : 'Join the Journey'}
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: 4 }}>
@@ -133,18 +193,25 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
             {tab === 'signin' && (
               <form onSubmit={handleSignIn} className="anim-fade" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {siErr && (
-                  <div className="info-box error" style={{ marginBottom: 4, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div className="info-box error" role="alert" aria-live="assertive" style={{ marginBottom: 4, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <AlertCircle size={14} /> {siErr}
                   </div>
                 )}
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="si-email" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
                     Email Address
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
+                      id="si-email"
                       type="email"
+                      name="email"
+                      autoComplete="email"
+                      required
+                      aria-required="true"
+                      aria-invalid={siEmailInvalid}
+                      aria-describedby={siEmailInvalid ? 'si-email-error' : undefined}
                       className="glass-input"
                       placeholder="you@college.edu"
                       value={siEmail}
@@ -153,15 +220,27 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
                     />
                     <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
+                  {siEmailInvalid && (
+                    <div id="si-email-error" style={{ fontSize: '0.72rem', color: 'var(--rose)', marginTop: 4 }}>
+                      Email is required.
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="si-pass" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
                     Password
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
+                      id="si-pass"
                       type="password"
+                      name="password"
+                      autoComplete="current-password"
+                      required
+                      aria-required="true"
+                      aria-invalid={siPassInvalid}
+                      aria-describedby={siPassInvalid ? 'si-pass-error' : undefined}
                       className="glass-input"
                       placeholder="••••••••"
                       value={siPass}
@@ -170,6 +249,11 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
                     />
                     <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
+                  {siPassInvalid && (
+                    <div id="si-pass-error" style={{ fontSize: '0.72rem', color: 'var(--rose)', marginTop: 4 }}>
+                      Password is required.
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit" className="btn btn-amber" style={{ width: '100%', padding: '12px', marginTop: 6, fontSize: '0.88rem' }} disabled={siLoad}>
@@ -182,18 +266,25 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
             {tab === 'signup' && (
               <form onSubmit={handleSignUp} className="anim-fade" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {suErr && (
-                  <div className="info-box error" style={{ marginBottom: 4, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div className="info-box error" role="alert" aria-live="assertive" style={{ marginBottom: 4, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <AlertCircle size={14} /> {suErr}
                   </div>
                 )}
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="su-name" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
                     Your Name
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
+                      id="su-name"
                       type="text"
+                      name="name"
+                      autoComplete="name"
+                      required
+                      aria-required="true"
+                      aria-invalid={suNameInvalid}
+                      aria-describedby={suNameInvalid ? 'su-name-error' : undefined}
                       className="glass-input"
                       placeholder="Rahul Sharma"
                       value={suName}
@@ -202,15 +293,27 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
                     />
                     <User size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
+                  {suNameInvalid && (
+                    <div id="su-name-error" style={{ fontSize: '0.72rem', color: 'var(--rose)', marginTop: 4 }}>
+                      Name is required.
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="su-email" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
                     Email Address
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
+                      id="su-email"
                       type="email"
+                      name="email"
+                      autoComplete="email"
+                      required
+                      aria-required="true"
+                      aria-invalid={suEmailInvalid}
+                      aria-describedby={suEmailInvalid ? 'su-email-error' : undefined}
                       className="glass-input"
                       placeholder="rahul@college.edu"
                       value={suEmail}
@@ -219,23 +322,58 @@ export default function AuthModal({ initialTab = 'signup', onClose, onSuccess })
                     />
                     <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
+                  {suEmailInvalid && (
+                    <div id="su-email-error" style={{ fontSize: '0.72rem', color: 'var(--rose)', marginTop: 4 }}>
+                      Email is required.
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="su-pass" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
                     Create Password
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
+                      id="su-pass"
                       type="password"
+                      name="new-password"
+                      autoComplete="new-password"
+                      required
+                      aria-required="true"
+                      aria-invalid={suPassInvalid}
+                      aria-describedby={suPassInvalid ? 'su-pass-error' : undefined}
                       className="glass-input"
-                      placeholder="At least 6 characters"
+                      placeholder="Min 8 chars (A-Z, 0-9, !@#$)"
                       value={suPass}
                       onChange={e => setSuPass(e.target.value)}
                       style={{ paddingLeft: 38 }}
                     />
                     <Lock size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   </div>
+                  {suPassInvalid && (
+                    <div id="su-pass-error" style={{ fontSize: '0.72rem', color: 'var(--rose)', marginTop: 4 }}>
+                      Password must meet all the requirements below.
+                    </div>
+                  )}
+
+                  {/* Password Requirements Checklist */}
+                  {suPass.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8, padding: '8px 12px', background: 'rgba(0,0,0,0.2)', borderRadius: 'var(--r-md)', fontSize: '0.7rem' }}>
+                      <div style={{ color: suPassValid.hasMinLength ? 'var(--emerald)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {suPassValid.hasMinLength ? <Check size={12} /> : '○'} 8+ Characters
+                      </div>
+                      <div style={{ color: suPassValid.hasUpper ? 'var(--emerald)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {suPassValid.hasUpper ? <Check size={12} /> : '○'} Uppercase (A-Z)
+                      </div>
+                      <div style={{ color: suPassValid.hasNumber ? 'var(--emerald)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {suPassValid.hasNumber ? <Check size={12} /> : '○'} Number (0-9)
+                      </div>
+                      <div style={{ color: suPassValid.hasSpecial ? 'var(--emerald)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {suPassValid.hasSpecial ? <Check size={12} /> : '○'} Special (!@#$)
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit" className="btn btn-amber" style={{ width: '100%', padding: '12px', marginTop: 6, fontSize: '0.88rem' }} disabled={suLoad}>

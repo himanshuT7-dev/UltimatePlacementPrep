@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Code2, ChevronDown, ChevronUp, Copy, Check, Play, Terminal } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -9,12 +9,14 @@ import 'prismjs/components/prism-javascript';
 export default function CodeDrawer({ code, lang = 'java', onRunSandbox }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const codeRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen) {
-      Prism.highlightAll();
+    if (isOpen && codeRef.current) {
+      // Highlight only this element instead of re-scanning the whole DOM
+      Prism.highlightElement(codeRef.current);
     }
-  }, [isOpen, code]);
+  }, [isOpen, code, lang]);
 
   if (!code) return null;
 
@@ -123,7 +125,7 @@ export default function CodeDrawer({ code, lang = 'java', onRunSandbox }) {
           <div className="code-block" style={{ margin: 0, borderRadius: 0, border: 'none' }}>
             <div className="code-block-body" style={{ maxHeight: 420, overflowY: 'auto' }}>
               <pre style={{ margin: 0, padding: 0, background: 'transparent' }}>
-                <code className={`language-${lang}`}>{code}</code>
+                <code ref={codeRef} className={`language-${lang}`}>{code}</code>
               </pre>
             </div>
           </div>

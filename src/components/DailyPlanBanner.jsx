@@ -1,7 +1,15 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { STUDY_PLANS } from '../data/studyPlans';
-import { CheckCircle2, Circle, Settings2 } from 'lucide-react';
+import { CheckCircle2, Circle, Settings2, Zap, Flame, BookOpen, Target, Trophy } from 'lucide-react';
+
+const iconMap = {
+  Zap: <Zap size={24} color="#fcd34d" />,
+  Flame: <Flame size={24} color="#f97316" />,
+  BookOpen: <BookOpen size={24} color="#60a5fa" />,
+  Target: <Target size={24} color="#f43f5e" />,
+  Trophy: <Trophy size={24} color="#fbbf24" />
+};
 
 export default function DailyPlanBanner({ onChangePlan }) {
   const { progress, getStudyDay, getTodaysTopics } = useAuth();
@@ -27,7 +35,7 @@ export default function DailyPlanBanner({ onChangePlan }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: '1.2rem' }}>{plan.emoji}</span>
+            <span style={{ display: 'flex' }}>{iconMap[plan.iconName]}</span>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
               Day {dayNumber} of {plan.duration} · {plan.name}
             </h3>
@@ -55,7 +63,15 @@ export default function DailyPlanBanner({ onChangePlan }) {
             {completedToday.length} / {todaysTopics.length} Completed
           </span>
         </div>
-        <div className="progress-bar-wrap" style={{ height: 6, marginBottom: 16 }}>
+        <div
+          className="progress-bar-wrap"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={completionPercent}
+          aria-label="Daily plan progress"
+          style={{ height: 6, marginBottom: 16 }}
+        >
           <div className="progress-bar" style={{ width: `${completionPercent}%`, background: completionPercent === 100 ? '#34d399' : 'var(--amber)' }} />
         </div>
 

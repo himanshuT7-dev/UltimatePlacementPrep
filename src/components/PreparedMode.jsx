@@ -66,7 +66,14 @@ export default function PreparedMode({ onSwitchLearn }) {
               <span style={{ color: 'var(--text-secondary)' }}>Topics Completed</span>
               <span style={{ color: 'var(--amber)' }}>{done} / {totalTopics}</span>
             </div>
-            <div className="progress-bar-wrap">
+            <div
+              className="progress-bar-wrap"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={pct}
+              aria-label="Topics completed progress"
+            >
               <div className="progress-bar" style={{ width: `${pct}%` }} />
             </div>
             <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>

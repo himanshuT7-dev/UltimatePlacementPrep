@@ -1,21 +1,120 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
-  Check, CheckCircle2, X as XIcon, Languages, Volume2, VolumeX, Bookmark, ArrowRight, ArrowLeft
+  Check, CheckCircle2, X as XIcon, Languages, Volume2, VolumeX, Bookmark, ArrowRight, ArrowLeft, Mic, HelpCircle
 } from 'lucide-react';
-import InteractiveVisualizer from './visualizers/InteractiveVisualizer';
-import CodeDrawer from './CodeDrawer';
-import SQLSandbox from './SQLSandbox';
-import JSPlayground from './JSPlayground';
+
+const LANGS = ['English','Hinglish','Hindi','Tamil','Telugu','Kannada','Marathi','Bengali','Gujarati'];
+
+// Replicate the stale-hash reload protection used by App.jsx so lazily loaded
+// lesson components auto-reload once when a new build changes their asset hash.
+function lazyWithRetry(componentImport) {
+  return React.lazy(async () => {
+    const pageHasAlreadyBeenReloaded = JSON.parse(
+      sessionStorage.getItem('page_reloaded_for_new_build') || 'false'
+    );
+    try {
+      const component = await componentImport();
+      sessionStorage.setItem('page_reloaded_for_new_build', 'false');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenReloaded) {
+        sessionStorage.setItem('page_reloaded_for_new_build', 'true');
+        window.location.reload();
+      }
+      throw error;
+    }
+  });
+}
+
+const InteractiveVisualizer = lazyWithRetry(() => import('./visualizers/InteractiveVisualizer'));
+const CodeDrawer = lazyWithRetry(() => import('./CodeDrawer'));
+const SQLSandbox = lazyWithRetry(() => import('./SQLSandbox'));
+const JSPlayground = lazyWithRetry(() => import('./JSPlayground'));
 import TopicNotes from './TopicNotes';
+import confetti from 'canvas-confetti';
 import { playSound } from '../utils/sounds';
+import { useAuth } from '../context/AuthContext';
+import { speakText, stopSpeech } from '../utils/speech';
+
+const FormatText = ({ text }) => {
+  if (!text) return null;
+  
+  // Auto-format giant blocks of text that lack newlines by breaking after sentences
+  let formattedText = text;
+  if (!formattedText.includes('\n')) {
+    formattedText = formattedText.replace(/([.?!])\s+([A-Z])/g, '$1\n\n$2');
+  }
+  
+  return formattedText.split('\n').map((line, i) => {
+    if (!line.trim()) return <div key={i} style={{ height: 12 }} />;
+    
+    let isBullet = line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('—');
+    let content = line.trim();
+    if (isBullet) content = content.substring(1).trim();
+    
+    // Parse `code` and **bold**
+    const parts = content.split(/(\`[^\`]+\`|\*\*[^\*]+\*\*)/g);
+    
+    // Bold the part before the first colon if it exists and is short enough to be a label
+    const formatColons = (str) => {
+      const colonIdx = str.indexOf(':');
+      if (colonIdx > 0 && colonIdx < 60) { // arbitrary length limit for a label
+        return (
+          <>
+            <strong style={{ color: 'var(--amber)', fontWeight: 700 }}>{str.slice(0, colonIdx + 1)}</strong>
+            {str.slice(colonIdx + 1)}
+          </>
+        );
+      }
+      return str;
+    };
+
+    return (
+      <div key={i} style={{ 
+        marginBottom: isBullet ? '6px' : '14px', 
+        lineHeight: 1.7, 
+        color: 'var(--text-secondary)',
+        display: isBullet ? 'flex' : 'block',
+        alignItems: 'flex-start',
+        marginLeft: isBullet ? (line.startsWith('  ') ? '32px' : '16px') : '0'
+      }}>
+        {isBullet && <span style={{ color: 'var(--amber)', marginRight: '10px', marginTop: '-1px' }}>•</span>}
+        <div>
+          {parts.map((part, j) => {
+            if (part.startsWith('`') && part.endsWith('`')) {
+              return (
+                <code key={j} style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  color: 'var(--sky)',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  fontFamily: 'var(--mono)',
+                  fontSize: '0.85em',
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                  {part.slice(1, -1)}
+                </code>
+              );
+            }
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+            }
+            return <span key={j}>{j === 0 ? formatColons(part) : part}</span>;
+          })}
+        </div>
+      </div>
+    );
+  });
+};
 
 export default function LessonStepper({
-  topic, activeTrack, isCompleted, markComplete, toggleBookmark, bookmarks, nativeLang,
+  topic, activeTrack, isCompleted, markComplete, toggleBookmark, bookmarks, nativeLang: propNativeLang,
   scheduleReview, recordQuizResult,
-  onNextTopic, onPrevTopic, hasNext, hasPrev
+  onNextTopic, onPrevTopic, hasNext, hasPrev, onAskWhyWrong
 }) {
   const [activeStep, setActiveStep] = useState(1);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const { user, progress, voiceGender, setVoiceGender, nativeLang, setNativeLang } = useAuth();
   const [chosen, setChosen] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -24,21 +123,22 @@ export default function LessonStepper({
     setIsSpeaking(false);
     setChosen(null);
     setSubmitted(false);
-    window.speechSynthesis?.cancel();
+    stopSpeech();
   }, [topic]);
 
   const toggleAudio = (text) => {
     if (isSpeaking) {
-      window.speechSynthesis?.cancel();
+      stopSpeech();
       setIsSpeaking(false);
     } else {
-      window.speechSynthesis?.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.9;
-      u.onend = () => setIsSpeaking(false);
-      u.onerror = () => setIsSpeaking(false);
       setIsSpeaking(true);
-      window.speechSynthesis?.speak(u);
+      speakText(text, {
+        nativeLang,
+        voiceGender,
+        rate: 0.95,
+        onEnd: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false)
+      });
     }
   };
 
@@ -56,11 +156,20 @@ export default function LessonStepper({
       playSound.success();
       markComplete(topic.id);
       if (scheduleReview) scheduleReview(topic.id, 5);
+      confetti({ particleCount: 90, spread: 75, origin: { y: 0.75 }, colors: ['#f59e0b', '#34d399', '#38bdf8', '#a78bfa'] });
     } else {
       playSound.error();
       if (scheduleReview) scheduleReview(topic.id, 1);
     }
   };
+
+  /* Celebration when landing on the Lesson Complete step after a correct quiz */
+  useEffect(() => {
+    if (activeStep === 5 && submitted && chosen === quiz?.correct) {
+      confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 }, colors: ['#f59e0b', '#34d399', '#38bdf8', '#a78bfa', '#fb7185'] });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStep, submitted, chosen, topic?.id]);
 
   const nextStep = () => setActiveStep(prev => Math.min(5, prev + 1));
   const prevStep = () => setActiveStep(prev => Math.max(1, prev - 1));
@@ -94,8 +203,8 @@ export default function LessonStepper({
         <h1 className="topic-title">{topic.title}</h1>
       </div>
 
-      {/* Progress Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, position: 'relative' }}>
+      {/* Progress Bar (Desktop) */}
+      <div className="desktop-stepper" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, position: 'relative' }}>
         <div style={{ position: 'absolute', top: 15, left: 20, right: 20, height: 2, background: 'var(--glass-border)', zIndex: 0 }}>
            <div style={{ 
              height: '100%', 
@@ -127,17 +236,44 @@ export default function LessonStepper({
         })}
       </div>
 
+      {/* Progress Bar (Mobile) */}
+      <div className="mobile-stepper" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: 'var(--r-pill)', border: '1px solid var(--glass-border)' }}>
+        <button className="btn btn-ghost" onClick={prevStep} disabled={activeStep === 1} style={{ padding: '6px', borderRadius: '50%', minHeight: 'unset', width: 32, height: 32 }}>
+          <ArrowLeft size={16} />
+        </button>
+        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          Step {activeStep} of {STEPS.length}: <span style={{ color: 'var(--amber)' }}>{STEPS[activeStep - 1]}</span>
+        </div>
+        <button className="btn btn-ghost" onClick={nextStep} disabled={activeStep === STEPS.length} style={{ padding: '6px', borderRadius: '50%', minHeight: 'unset', width: 32, height: 32 }}>
+          <ArrowRight size={16} />
+        </button>
+      </div>
+
       {/* Step Content */}
       <div className="step-content anim-fade" style={{ minHeight: 300, display: 'flex', flexDirection: 'column' }}>
         {activeStep === 1 && (
           <div className="anim-fade" style={{ flex: 1 }}>
-            <div className="topic-summary" style={{ whiteSpace: 'pre-line', fontSize: '1.1rem', marginBottom: 24, lineHeight: 1.6 }}>
-              {topic.summary.split('.').slice(0, 3).join('.') + '.'}
+            <div className="topic-summary" style={{ fontSize: '1.1rem', marginBottom: 24 }}>
+              <FormatText text={topic.summary} />
             </div>
             {nativeText && (
               <div className="diag-section native" style={{ background: 'rgba(234, 88, 12, 0.05)', border: '1px solid rgba(234, 88, 12, 0.2)', padding: 20, borderRadius: 'var(--r-md)' }}>
-                <div className="diag-label" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--amber)' }}><Languages size={15} /> {nativeLang} Explanation</span>
+                <div className="diag-label" style={{ justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--amber)' }}><Languages size={15} /> {nativeLang} Explanation</span>
+                    <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: '4px', height: '24px' }}>
+                      <select value={nativeLang} onChange={e => setNativeLang(e.target.value)} style={{ fontSize: '0.75rem', padding: '0 4px', background: 'transparent' }}>
+                        {LANGS.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                    <div className="lang-selector" style={{ background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: '4px', height: '24px' }}>
+                      <Mic size={12} style={{ color: 'var(--sky)' }} />
+                      <select value={voiceGender} onChange={e => setVoiceGender(e.target.value)} style={{ fontSize: '0.75rem', padding: '0 4px', background: 'transparent' }}>
+                        <option value="Female">Female Voice</option>
+                        <option value="Male">Male Voice</option>
+                      </select>
+                    </div>
+                  </div>
                   <button
                     className="btn btn-ghost"
                     style={{ padding: '4px 10px', fontSize: '0.72rem' }}
@@ -146,7 +282,9 @@ export default function LessonStepper({
                     {isSpeaking ? <><VolumeX size={12} /> Stop</> : <><Volume2 size={12} /> Listen</>}
                   </button>
                 </div>
-                <p style={{ lineHeight: 1.75, fontSize: '0.95rem' }}>{nativeText}</p>
+                <div style={{ fontSize: '0.95rem' }}>
+                  <FormatText text={nativeText} />
+                </div>
               </div>
             )}
           </div>
@@ -154,20 +292,28 @@ export default function LessonStepper({
 
         {activeStep === 2 && (
           <div className="anim-fade" style={{ flex: 1 }}>
-            <InteractiveVisualizer topic={topic} />
+            <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
+              <InteractiveVisualizer topic={topic} />
+            </Suspense>
           </div>
         )}
 
         {activeStep === 3 && (
           <div className="anim-fade" style={{ flex: 1 }}>
             {topic.lang !== 'sql' && !topic.hasJSPlayground && (
-              <CodeDrawer code={topic.code} lang={topic.lang || 'java'} />
+              <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
+                <CodeDrawer code={topic.code} lang={topic.lang || 'java'} />
+              </Suspense>
             )}
             {topic.hasSandbox && (
-              <SQLSandbox initialQuery={topic.code?.includes('SELECT') ? topic.code : undefined} />
+              <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
+                <SQLSandbox initialQuery={topic.code?.includes('SELECT') ? topic.code : undefined} />
+              </Suspense>
             )}
             {topic.hasJSPlayground && (
-              <JSPlayground initialCode={topic.code} />
+              <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
+                <JSPlayground initialCode={topic.code} />
+              </Suspense>
             )}
           </div>
         )}
@@ -203,9 +349,24 @@ export default function LessonStepper({
                   })}
                 </div>
                 {submitted && (
-                  <div className="diag-section correct anim-fade" style={{ marginTop: 20 }}>
-                    <div className="diag-label"><Check size={14}/> Explanation</div>
-                    <p style={{ whiteSpace: 'pre-line', fontSize: '0.9rem', lineHeight: 1.6 }}>{quiz.explanation}</p>
+                  <div className="anim-fade" style={{ marginTop: 20 }}>
+                    <div className={`quiz-result-banner ${chosen === quiz.correct ? 'correct' : 'wrong'}`}>
+                      {chosen === quiz.correct ? <Check size={16} /> : <XIcon size={16} />}
+                      {chosen === quiz.correct ? 'Correct! Great job.' : 'Not quite — check the explanation below.'}
+                    </div>
+                    <div className="diag-section correct" style={{ marginTop: 16 }}>
+                      <div className="diag-label"><Check size={14}/> Explanation</div>
+                      <p style={{ whiteSpace: 'pre-line', fontSize: '0.9rem', lineHeight: 1.6 }}>{quiz.explanation}</p>
+                      {chosen !== quiz.correct && onAskWhyWrong && (
+                        <button
+                          className="btn btn-ghost"
+                          style={{ marginTop: 12, padding: '8px 14px', fontSize: '0.8rem' }}
+                          onClick={() => onAskWhyWrong(quiz, chosen)}
+                        >
+                          <HelpCircle size={13} /> Why was this wrong?
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

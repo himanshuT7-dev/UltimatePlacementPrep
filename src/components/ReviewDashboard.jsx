@@ -21,7 +21,7 @@ export default function ReviewDashboard({ onSelectTopic }) {
       gap: 12
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--amber)', fontWeight: 700 }}>
-        <span>🔄 {dueTopics.length} topics due for revision today</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><RefreshCw size={16} /> {dueTopics.length} topics due for revision today</span>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {dueTopics.map(id => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BookOpen, Check, HelpCircle, Languages, Volume2, VolumeX,
   Sparkles, ChevronDown, ChevronRight, X as XIcon,
@@ -6,12 +6,9 @@ import {
   Layers, Brain, FileText, CheckCircle2, Flame, Award, Menu
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { DiagnosticNode, DeepDiveNode, QuizGenNode } from '../agents/pipeline';
 import DiagnosticModal    from './DiagnosticModal';
-const SQLSandbox = React.lazy(() => import('./SQLSandbox'));
-const JSPlayground = React.lazy(() => import('./JSPlayground'));
-const CodeDrawer = React.lazy(() => import('./CodeDrawer'));
-const InteractiveVisualizer = React.lazy(() => import('./visualizers/InteractiveVisualizer'));
 
 import { TrackIcon }      from './TrackIcons';
 import LessonStepper      from './LessonStepper';
@@ -20,7 +17,8 @@ import ReviewDashboard    from './ReviewDashboard';
 import DailyPlanBanner    from './DailyPlanBanner';
 import StudyPlanSelector  from './StudyPlanSelector';
 import { playSound }      from '../utils/sounds';
-import { useToast }       from '../context/ToastContext';
+import { speakText, stopSpeech } from '../utils/speech';
+import { STUDY_PLANS, getCuratedPlanTopics } from '../data/studyPlans.js';
 
 const LoadingSpinner = () => (
   <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -37,9 +35,9 @@ const TRACK_GRADIENTS = [
   'linear-gradient(135deg,#f43f5e,#be123c)',
 ];
 
-export default function LearnMode({ searchSelection }) {
-  const { progress, markTopicCompleted, nativeLang, scheduleReview, recordQuizResult } = useAuth();
+export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMenuOpen }) {
   const { showToast } = useToast();
+  const { progress, markTopicCompleted, logMistake, scheduleReview, getDueReviews, recordQuizResult, addXP, nativeLang, setNativeLang } = useAuth();
 
   const [tracks,      setTracks]      = useState([]);
   const [trackIdx,    setTrackIdx]    = useState(0);
@@ -48,7 +46,7 @@ export default function LearnMode({ searchSelection }) {
   const [expanded,    setExpanded]    = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode,  setFilterMode]  = useState('all'); // all | completed | bookmarked
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [bookmarks,   setBookmarks]   = useState(() => {
     try { return JSON.parse(localStorage.getItem('upp_bookmarks_v1')) || []; } catch { return []; }
   });
@@ -134,6 +132,7 @@ export default function LearnMode({ searchSelection }) {
     const firstTopic = tracks[idx]?.modules?.[0]?.topics?.[0];
     selectTopic(firstTopic, tracks[idx]);
     setExpanded({ [tracks[idx]?.modules?.[0]?.id]: true });
+    if (window.innerWidth <= 768) setSidebarOpen(true);
   };
 
   const selectTopic = (t) => {
@@ -148,6 +147,7 @@ export default function LearnMode({ searchSelection }) {
     setAskedQuestions([]);
     setShowFlashcard(false);
     setCardFlipped(false);
+    if (window.innerWidth <= 768) setSidebarOpen(false);
   };
 
   const toggleBookmark = (topicId) => {
@@ -158,7 +158,7 @@ export default function LearnMode({ searchSelection }) {
         showToast('Removed from bookmarks', 'info');
         return prev.filter(id => id !== topicId);
       } else {
-        showToast('Added to bookmarks! 📌', 'success');
+        showToast('Added to bookmarks!', 'success');
         return [...prev, topicId];
       }
     });
@@ -187,18 +187,19 @@ export default function LearnMode({ searchSelection }) {
     if (isSpeaking) {
       stopAudio();
     } else {
-      stopAudio();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.9;
-      u.onend = () => setIsSpeaking(false);
-      u.onerror = () => setIsSpeaking(false);
       setIsSpeaking(true);
-      window.speechSynthesis?.speak(u);
+      speakText(text, {
+        nativeLang,
+        voiceGender,
+        rate: 0.95,
+        onEnd: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false)
+      });
     }
   };
 
   const stopAudio = () => {
-    window.speechSynthesis?.cancel();
+    stopSpeech();
     setIsSpeaking(false);
   };
 
@@ -228,7 +229,7 @@ export default function LearnMode({ searchSelection }) {
       setAskedQuestions(prev => [...prev, q.question].slice(-20));
       setAiQuizMode(true);
     } catch (e) {
-      alert('AI Quiz generation failed: ' + e.message);
+      showToast('AI Quiz generation failed: ' + e.message, 'error', 4000);
     } finally { setQuizLoading(false); }
   };
 
@@ -254,6 +255,36 @@ export default function LearnMode({ searchSelection }) {
     [activeTrack, progress.completedTopics]
   );
   const nativeText = topic?.native?.[nativeLang] || topic?.native?.Hinglish || '';
+
+  const activePlan = STUDY_PLANS[progress.studyPlan] || STUDY_PLANS.standard;
+  const [planFilterActive, setPlanFilterActive] = useState(true);
+
+  /* Curated high-yield topics for active study plan */
+  const curatedTopicIds = useMemo(() => {
+    const allT = TRACKS.flatMap(t => t?.modules?.flatMap(m => m.topics) || []);
+    return new Set(getCuratedPlanTopics(progress.studyPlan, allT).map(t => t.id));
+  }, [progress.studyPlan]);
+
+  /* Sidebar topic filter (search + plan filter + completed/bookmarked/pending/all) */
+  const matchesFilter = (t) => {
+    if (!t) return false;
+    // In plan view, filter to curated plan topics only
+    if (planFilterActive && progress.studyPlan && !curatedTopicIds.has(t.id)) {
+      return false;
+    }
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = (t.title?.toLowerCase().includes(q) || t.summary?.toLowerCase().includes(q));
+    if (!matchesSearch) return false;
+    if (filterMode === 'completed') return isCompleted(t.id);
+    if (filterMode === 'pending') return !isCompleted(t.id);
+    if (filterMode === 'bookmarked') return bookmarks.includes(t.id);
+    return true;
+  };
+
+  const totalFilteredTopics = useMemo(
+    () => (activeTrack?.modules || []).reduce((sum, m) => sum + (m.topics || []).filter(matchesFilter).length, 0),
+    [activeTrack, searchQuery, filterMode, bookmarks, progress.completedTopics, planFilterActive, curatedTopicIds]
+  );
 
   if (loading) {
     return (
@@ -321,24 +352,81 @@ export default function LearnMode({ searchSelection }) {
       
       <DailyPlanBanner onChangePlan={() => setShowPlanSelector(true)} />
 
+      {/* ── Plan-Aware Filter Bar ── */}
+      {progress.studyPlan && (
+        <div style={{
+          background: planFilterActive ? 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(8,12,20,0.85) 100%)' : 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(245,158,11,0.25)',
+          borderRadius: 14,
+          padding: '12px 20px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Flame size={18} style={{ color: 'var(--amber)' }} />
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f1f5f9' }}>
+                {activePlan.name} ({curatedTopicIds.size} Curated Topics)
+              </div>
+              <div style={{ fontSize: '0.74rem', color: '#94a3b8' }}>
+                {planFilterActive 
+                  ? `Showing top ${curatedTopicIds.size} high-importance topics needed for your plan`
+                  : 'Showing all 105+ curriculum topics across all tracks'}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setPlanFilterActive(prev => !prev)}
+            style={{
+              background: planFilterActive ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(245,158,11,0.4)',
+              color: planFilterActive ? '#fbbf24' : '#e2e8f0',
+              padding: '6px 14px',
+              borderRadius: 9999,
+              fontSize: '0.76rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            {planFilterActive ? <CheckCircle2 size={13} /> : <BookOpen size={13} />}
+            {planFilterActive ? '🔥 High-Yield Plan View (Active)' : '📚 Show All 105 Topics'}
+          </button>
+        </div>
+      )}
+
       {/* Mobile Sidebar Toggle */}
-      <button 
-        className="sidebar-toggle btn btn-ghost"
-        style={{ marginBottom: 16, width: '100%', justifyContent: 'center' }}
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        <Menu size={16} /> {sidebarOpen ? 'Hide Topics' : 'Show Topics'}
-      </button>
+      <div className="mobile-topic-toggle-wrapper desktop-hide">
+        <button 
+          className="mobile-topic-toggle btn btn-amber"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu size={16} /> Select Topic / Track
+          {topic && <span className="badge badge-amber" style={{ marginLeft: 8, background: 'rgba(0,0,0,0.2)', color: '#fff', border: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', display: 'inline-block', verticalAlign: 'middle' }}>{topic.title}</span>}
+        </button>
+      </div>
 
       <div className="learn-layout">
         {/* ── Sidebar with Search & Filters ──────────────── */}
-        <aside style={{ display: sidebarOpen ? 'block' : 'none' }}>
+        {sidebarOpen && <div className="mobile-drawer-overlay desktop-hide" onClick={() => setSidebarOpen(false)}></div>}
+        <aside className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
           <div className="glass sidebar" style={{ padding: '16px 12px' }}>
+            {/* Close button for mobile */}
+            <button className="mobile-sidebar-close btn btn-ghost desktop-hide" onClick={() => setSidebarOpen(false)} style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, padding: 8 }}>
+              <XIcon size={18} />
+            </button>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 6, marginBottom: 10 }}>
               <div className="sidebar-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrackIcon trackId={activeTrack.id} size={16} /> Topics
               </div>
-              <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>{totalTopics}</span>
+              <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>{totalFilteredTopics}</span>
             </div>
 
             {/* Sidebar Search Bar */}
@@ -380,15 +468,10 @@ export default function LearnMode({ searchSelection }) {
 
             {/* Module Accordions */}
             {activeTrack.modules.map(mod => {
-              const filteredTopics = (mod.topics || []).filter(t => {
-                if (!t) return false;
-                const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) || t.summary?.toLowerCase().includes(searchQuery.toLowerCase());
-                if (!matchesSearch) return false;
-                if (filterMode === 'completed') return isCompleted(t.id);
-                if (filterMode === 'pending') return !isCompleted(t.id);
-                if (filterMode === 'bookmarked') return bookmarks.includes(t.id);
-                return true;
-              });
+              const filteredTopics = (mod.topics || []).filter(matchesFilter);
+              const modTopics = mod.topics || [];
+              const modDone = modTopics.filter(t => t && isCompleted(t.id)).length;
+              const modAllDone = modTopics.length > 0 && modDone === modTopics.length;
 
               if (filteredTopics.length === 0 && searchQuery) return null;
 
@@ -403,9 +486,15 @@ export default function LearnMode({ searchSelection }) {
                     onClick={() => toggleModule(mod.id)}
                   >
                     <span className="module-group-title" style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{mod.title}</span>
-                    {expanded[mod.id]
-                      ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
-                      : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className={`module-count ${modAllDone ? 'done' : ''}`}>
+                        {modDone === modTopics.length && modTopics.length > 0 ? <Check size={9} /> : null}
+                        {modDone}/{modTopics.length}
+                      </span>
+                      {expanded[mod.id]
+                        ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
+                        : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
+                    </span>
                   </button>
 
                   {(expanded[mod.id] || searchQuery) && filteredTopics.map(t => (
@@ -425,9 +514,35 @@ export default function LearnMode({ searchSelection }) {
                       </div>
                     </button>
                   ))}
+
+                  {filteredTopics.length === 0 && (expanded[mod.id] || searchQuery) && (
+                    <div style={{ padding: '8px 12px 12px 12px', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      {filterMode === 'completed'
+                        ? 'No completed topics yet — keep going!'
+                        : filterMode === 'bookmarked'
+                          ? 'No bookmarked topics yet — bookmark topics to see them here.'
+                          : filterMode === 'pending'
+                            ? 'All topics completed — great job!'
+                            : 'No topics available in this module yet.'}
+                    </div>
+                  )}
                 </div>
               );
             })}
+
+            {/* Overall empty state for the whole sidebar */}
+            {totalFilteredTopics === 0 && (
+              <div className="empty-state" style={{ margin: '6px 4px' }}>
+                <Search size={22} className="empty-icon" />
+                {searchQuery
+                  ? 'No topics match your search.'
+                  : filterMode === 'completed'
+                    ? 'No completed topics yet — keep going!'
+                    : filterMode === 'bookmarked'
+                      ? 'No bookmarked topics yet — bookmark topics to see them here.'
+                      : 'No topics available in this track yet.'}
+              </div>
+            )}
           </div>
         </aside>
 
@@ -452,6 +567,11 @@ export default function LearnMode({ searchSelection }) {
               onPrevTopic={() => selectTopic(allTrackTopics[currentTopicIndex - 1])}
               hasNext={currentTopicIndex < allTrackTopics.length - 1}
               hasPrev={currentTopicIndex > 0}
+              onAskWhyWrong={(q, chosenIdx) => {
+                setQuiz(q);
+                setChosen(chosenIdx);
+                setDiagOpen(true);
+              }}
             />
           )}
         </main>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { TRACKS } from '../data/index.js';
 import { TrackIcon } from './TrackIcons';
+import useDialog from '../hooks/useDialog';
 
 const allTopics = TRACKS.flatMap(track =>
   track.modules.flatMap(mod =>
@@ -19,6 +20,8 @@ export default function SearchModal({ onClose, onSelect }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
 
+  const { dialogProps } = useDialog({ onClose });
+
   const filtered = query.trim() === '' 
     ? [] 
     : allTopics.filter(t => 
@@ -33,12 +36,7 @@ export default function SearchModal({ onClose, onSelect }) {
 
   useEffect(() => {
     inputRef.current?.focus();
-    const handleGlobalKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [onClose]);
+  }, []);
 
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
@@ -56,9 +54,11 @@ export default function SearchModal({ onClose, onSelect }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 9999 }}>
-      <div 
+      <div
         className="glass"
-        onClick={e => e.stopPropagation()} 
+        {...dialogProps}
+        aria-labelledby="search-modal-title"
+        onClick={e => e.stopPropagation()}
         style={{
           width: '100%',
           maxWidth: 600,
@@ -72,6 +72,10 @@ export default function SearchModal({ onClose, onSelect }) {
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
         }}
       >
+        {/* Visually hidden title for aria-labelledby */}
+        <h2 id="search-modal-title" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 }}>
+          Search Topics
+        </h2>
         {/* Search Input */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <Search size={20} style={{ color: 'var(--text-muted)', marginRight: 12 }} />
@@ -92,8 +96,9 @@ export default function SearchModal({ onClose, onSelect }) {
               fontWeight: 500
             }}
           />
-          <button 
+          <button
             onClick={onClose}
+            aria-label="Close"
             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
           >
             <X size={20} />

@@ -30,7 +30,7 @@ export default function TopicNotes({ topicId }) {
       if (notes !== saved && notes !== '') {
         localStorage.setItem(storageKey, notes);
         setLastSaved(new Date());
-        showToast('Notes auto-saved 📝', 'success', 2000);
+        showToast('Notes auto-saved', 'success', 2000);
         playSound.click();
       } else if (notes === '' && saved) {
         localStorage.removeItem(storageKey);
@@ -43,18 +43,21 @@ export default function TopicNotes({ topicId }) {
 
   return (
     <div className="glass" style={{ marginTop: 24, borderRadius: 'var(--r-xl)' }}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        style={{ 
-          width: '100%', 
-          display: 'flex', 
-          alignItems: 'center', 
+        aria-expanded={isOpen}
+        aria-controls="topic-notes-panel"
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           padding: '16px 24px',
           background: 'none',
           border: 'none',
           color: 'var(--text-primary)',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          font: 'inherit'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>
@@ -67,7 +70,7 @@ export default function TopicNotes({ topicId }) {
       </button>
 
       {isOpen && (
-        <div style={{ padding: '0 24px 24px 24px' }} className="anim-fade">
+        <div id="topic-notes-panel" style={{ padding: '0 24px 24px 24px' }} className="anim-fade">
           <textarea
             className="glass-input"
             value={notes}

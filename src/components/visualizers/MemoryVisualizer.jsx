@@ -57,8 +57,12 @@ export default function MemoryVisualizer({ steps = [] }) {
 
   // Update SVG Reference Lines
   useEffect(() => {
-    const updateLines = () => {
-      if (!containerRef.current) return;
+    if (!containerRef.current) return;
+
+    let frameId;
+    let lastLinesRef = null;
+
+    const computeLines = () => {
       const containerRect = containerRef.current.getBoundingClientRect();
       const newLines = [];
 
@@ -66,32 +70,44 @@ export default function MemoryVisualizer({ steps = [] }) {
         if (item.type === 'reference' && item.ref) {
           const stackEl = document.getElementById(item.id);
           const heapEl = document.getElementById(`heap-${item.ref}`);
-          
+
           if (stackEl && heapEl) {
             const sRect = stackEl.getBoundingClientRect();
             const hRect = heapEl.getBoundingClientRect();
-            
+
             // Calculate relative coordinates with clean card boundary offsets
             const x1 = sRect.right - containerRect.left - 2;
             const y1 = sRect.top + sRect.height / 2 - containerRect.top;
             const x2 = hRect.left - containerRect.left - 4;
             const y2 = hRect.top + hRect.height / 2 - containerRect.top;
-            
+
             newLines.push({ id: `${item.id}-${item.ref}`, x1, y1, x2, y2 });
           }
         }
       });
-      setLines(newLines);
+      return newLines;
     };
 
-    updateLines();
-    
-    let frameId;
     const loop = () => {
-      updateLines();
+      const next = computeLines();
+      const prev = lastLinesRef;
+      // Only call setLines when the coordinates actually changed (e.g. during
+      // the card entrance animations); once stable this stops re-rendering.
+      const changed =
+        !prev ||
+        prev.length !== next.length ||
+        prev.some((l, i) =>
+          l.x1 !== next[i].x1 || l.y1 !== next[i].y1 ||
+          l.x2 !== next[i].x2 || l.y2 !== next[i].y2
+        );
+      if (changed) {
+        lastLinesRef = next;
+        setLines(next);
+      }
       frameId = requestAnimationFrame(loop);
     };
-    loop();
+
+    frameId = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(frameId);
   }, [stack, heap]);

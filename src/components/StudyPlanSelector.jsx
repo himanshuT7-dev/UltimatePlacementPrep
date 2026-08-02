@@ -1,10 +1,20 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { STUDY_PLANS } from '../data/studyPlans';
-import { Sparkles, X, ChevronRight } from 'lucide-react';
+import { Sparkles, X, ChevronRight, Zap, Flame, BookOpen, Target, Trophy } from 'lucide-react';
+import useDialog from '../hooks/useDialog';
+
+const iconMap = {
+  Zap: <Zap size={24} color="#fcd34d" />,
+  Flame: <Flame size={24} color="#f97316" />,
+  BookOpen: <BookOpen size={24} color="#60a5fa" />,
+  Target: <Target size={24} color="#f43f5e" />,
+  Trophy: <Trophy size={24} color="#fbbf24" />
+};
 
 export default function StudyPlanSelector({ onClose, forceSelection }) {
   const { setStudyPlan } = useAuth();
+  const { dialogProps } = useDialog({ onClose });
 
   const handleSelect = (planId) => {
     setStudyPlan(planId);
@@ -13,17 +23,22 @@ export default function StudyPlanSelector({ onClose, forceSelection }) {
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content glass" style={{ maxWidth: 850, width: '100%', padding: '24px 24px' }}>
+      <div
+        className="modal-content glass"
+        {...dialogProps}
+        aria-labelledby="study-plan-title"
+        style={{ maxWidth: 850, width: '100%', padding: '24px 24px', maxHeight: '90vh', overflowY: 'auto' }}
+      >
         {!forceSelection && (
-          <button className="modal-close" onClick={onClose} style={{ position: 'absolute', right: 16, top: 16 }}>
+          <button className="modal-close" onClick={onClose} aria-label="Close" style={{ position: 'absolute', right: 16, top: 16 }}>
             <X size={18} />
           </button>
         )}
-        
+
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <h2 id="study-plan-title" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <Sparkles size={20} style={{ color: 'var(--amber)' }} />
-            📅 Choose Your Placement Preparation Timeline
+            Choose Your Placement Preparation Timeline
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             We'll pace your learning journey to match your schedule
@@ -32,15 +47,21 @@ export default function StudyPlanSelector({ onClose, forceSelection }) {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))',
           gap: 12
         }}>
           {Object.values(STUDY_PLANS).map((plan) => (
-            <div
+            <button
               key={plan.id}
+              type="button"
               onClick={() => handleSelect(plan.id)}
               className="plan-card"
+              aria-label={`Select ${plan.name} plan (${plan.durationLabel})`}
               style={{
+                width: '100%',
+                textAlign: 'left',
+                font: 'inherit',
+                color: 'inherit',
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 'var(--r-md)',
@@ -64,7 +85,7 @@ export default function StudyPlanSelector({ onClose, forceSelection }) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: '1.3rem' }}>{plan.emoji}</span>
+                <span style={{ display: 'flex' }}>{iconMap[plan.iconName]}</span>
                 <span className="badge" style={{ background: 'rgba(245,158,11,0.2)', color: 'var(--amber)', fontSize: '0.65rem', padding: '3px 8px' }}>
                   {plan.durationLabel}
                 </span>
@@ -93,7 +114,7 @@ export default function StudyPlanSelector({ onClose, forceSelection }) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--amber)', fontSize: '0.8rem', fontWeight: 600, marginTop: 'auto' }}>
                 Select Plan <ChevronRight size={14} />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
