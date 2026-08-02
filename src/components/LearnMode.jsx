@@ -76,6 +76,15 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
   /* Study Plan Selector state for changing plan */
   const [showPlanSelector, setShowPlanSelector] = useState(false);
 
+  const activePlan = STUDY_PLANS[progress.studyPlan] || STUDY_PLANS.standard;
+  const [planFilterActive, setPlanFilterActive] = useState(true);
+
+  /* Curated high-yield topics for active study plan */
+  const curatedTopicIds = useMemo(() => {
+    const allT = TRACKS.flatMap(t => t?.modules?.flatMap(m => m.topics) || []);
+    return new Set(getCuratedPlanTopics(progress.studyPlan, allT).map(t => t.id));
+  }, [progress.studyPlan]);
+
   /* Initialize tracks synchronously */
   useEffect(() => {
     const ts = TRACKS;
@@ -118,8 +127,12 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
 
   /* Flat list of topics in current active track */
   const allTrackTopics = useMemo(() => {
-    return activeTrack?.modules?.flatMap(m => m.topics) || [];
-  }, [activeTrack]);
+    let topics = activeTrack?.modules?.flatMap(m => m.topics) || [];
+    if (planFilterActive && progress.studyPlan) {
+      topics = topics.filter(t => t && curatedTopicIds.has(t.id));
+    }
+    return topics;
+  }, [activeTrack, planFilterActive, progress.studyPlan, curatedTopicIds]);
 
   const currentTopicIndex = useMemo(() => {
     if (!topic || !allTrackTopics.length) return -1;
@@ -249,21 +262,12 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
   };
 
   /* Computed */
-  const totalTopics    = useMemo(() => activeTrack?.modules?.flatMap(m => m.topics)?.length || 0, [activeTrack]);
+  const totalTopics    = useMemo(() => allTrackTopics.length, [allTrackTopics]);
   const completedCount = useMemo(
-    () => (activeTrack?.modules?.flatMap(m => m.topics) || []).filter(t => t && isCompleted(t.id)).length,
-    [activeTrack, progress.completedTopics]
+    () => allTrackTopics.filter(t => t && isCompleted(t.id)).length,
+    [allTrackTopics, progress.completedTopics]
   );
   const nativeText = topic?.native?.[nativeLang] || topic?.native?.Hinglish || '';
-
-  const activePlan = STUDY_PLANS[progress.studyPlan] || STUDY_PLANS.standard;
-  const [planFilterActive, setPlanFilterActive] = useState(true);
-
-  /* Curated high-yield topics for active study plan */
-  const curatedTopicIds = useMemo(() => {
-    const allT = TRACKS.flatMap(t => t?.modules?.flatMap(m => m.topics) || []);
-    return new Set(getCuratedPlanTopics(progress.studyPlan, allT).map(t => t.id));
-  }, [progress.studyPlan]);
 
   /* Sidebar topic filter (search + plan filter + completed/bookmarked/pending/all) */
   const matchesFilter = (t) => {

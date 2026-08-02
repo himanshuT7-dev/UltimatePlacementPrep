@@ -3,9 +3,9 @@ import { UPPLogo } from './TrackIcons';
 import { Languages, LogOut, Menu, Flame, Search, BarChart2, BookOpen, Mic, Award, Lock, ChevronDown, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const LANGS = ['English','Hindi','Tamil','Telugu','Kannada','Marathi','Bengali','Gujarati'];
+const LANGS = ['Hinglish', 'English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Marathi', 'Bengali', 'Gujarati'];
 const LANG_CODES = {
-  'English': 'en', 'Hindi': 'hi', 'Tamil': 'ta', 'Telugu': 'te',
+  'Hinglish': 'hinglish', 'English': 'en', 'Hindi': 'hi', 'Tamil': 'ta', 'Telugu': 'te',
   'Kannada': 'kn', 'Marathi': 'mr', 'Bengali': 'bn', 'Gujarati': 'gu'
 };
 
@@ -29,10 +29,11 @@ export default function CommandBar({
   onSignUp,
   onGuest
 }) {
-  const { user, progress, logout } = useAuth();
-  const [currentLang, setCurrentLang] = useState('English');
+  const { user, progress, logout, nativeLang, setNativeLang } = useAuth();
   const [langOpen, setLangOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const currentLang = nativeLang || 'Hinglish';
 
   const navRef = useRef(null);
   const rafRef = useRef(null);
@@ -69,31 +70,16 @@ export default function CommandBar({
   }, []);
 
   useEffect(() => {
-    const match = document.cookie.match(/googtrans=\/en\/([a-z]{2})/);
-    if (match) {
-      const code = match[1];
-      const langName = Object.keys(LANG_CODES).find(k => LANG_CODES[k] === code);
-      if (langName) setCurrentLang(langName);
-    }
-  }, []);
-
-  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleLangChange = (lang) => {
-    setCurrentLang(lang);
     setLangOpen(false);
-    const code = LANG_CODES[lang] || 'en';
-    if (code === 'en') {
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
-    } else {
-      document.cookie = `googtrans=/en/${code}; path=/;`;
+    if (setNativeLang) {
+      setNativeLang(lang);
     }
-    setTimeout(() => window.location.reload(), 50);
   };
 
   return (
@@ -149,7 +135,7 @@ export default function CommandBar({
               {TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                const isLocked = tab.locked && completedTopics < 100;
+                const isLocked = tab.locked && !progress?.preparedModeUnlocked;
                 return (
                   <button
                     key={tab.id}

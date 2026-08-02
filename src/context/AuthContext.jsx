@@ -8,7 +8,7 @@ const LANG_KEY     = 'upp_lang_v1';
 const VOICE_KEY    = 'upp_voice_v1';
 
 import { getTotalTopics, getAllTopics } from '../data/index.js';
-import { generateDailySchedule } from '../data/studyPlans.js';
+import { generateDailySchedule, STUDY_PLANS } from '../data/studyPlans.js';
 import confetti from 'canvas-confetti';
 import { useToast } from './ToastContext';
 

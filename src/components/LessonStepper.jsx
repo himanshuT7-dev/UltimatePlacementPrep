@@ -145,7 +145,16 @@ export default function LessonStepper({
   const STEPS = ['Intuition', 'Visualize', 'Code', 'Quiz', 'Summary'];
 
   const quiz = topic?.quiz;
-  const nativeText = topic?.native?.[nativeLang] || topic?.native?.Hinglish || '';
+  const nativeText = (() => {
+    if (nativeLang === 'English') {
+      return topic?.native?.English || topic?.summary || '';
+    }
+    return topic?.native?.[nativeLang] ||
+      topic?.native?.[nativeLang?.toLowerCase?.()] ||
+      topic?.native?.Hindi ||
+      topic?.native?.Hinglish ||
+      (typeof topic?.native === 'string' ? topic.native : '');
+  })();
 
   const submitQuiz = (idx) => {
     setChosen(idx);
