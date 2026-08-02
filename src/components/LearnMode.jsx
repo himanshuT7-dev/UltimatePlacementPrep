@@ -37,7 +37,7 @@ const TRACK_GRADIENTS = [
 
 export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMenuOpen }) {
   const { showToast } = useToast();
-  const { progress, markTopicCompleted, logMistake, scheduleReview, getDueReviews, recordQuizResult, addXP, nativeLang, setNativeLang } = useAuth();
+  const { progress, markTopicCompleted, logMistake, scheduleReview, getDueReviews, recordQuizResult, addXP, nativeLang, setNativeLang, getTodaysTopics } = useAuth();
 
   const [tracks,      setTracks]      = useState([]);
   const [trackIdx,    setTrackIdx]    = useState(0);
@@ -84,6 +84,10 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     const allT = TRACKS.flatMap(t => t?.modules?.flatMap(m => m.topics) || []);
     return new Set(getCuratedPlanTopics(progress.studyPlan, allT).map(t => t.id));
   }, [progress.studyPlan]);
+
+  const todaysTopicIds = useMemo(() => {
+    return new Set((getTodaysTopics() || []).map(t => t.id));
+  }, [getTodaysTopics, progress.studyPlan]);
 
   /* Initialize tracks synchronously */
   useEffect(() => {
@@ -269,7 +273,7 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
   );
   const nativeText = topic?.native?.[nativeLang] || topic?.native?.Hinglish || '';
 
-  /* Sidebar topic filter (search + plan filter + completed/bookmarked/pending/all) */
+  /* Sidebar topic filter (search + plan filter + completed/bookmarked/pending/today/all) */
   const matchesFilter = (t) => {
     if (!t) return false;
     // In plan view, filter to curated plan topics only
@@ -279,6 +283,7 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     const q = searchQuery.trim().toLowerCase();
     const matchesSearch = (t.title?.toLowerCase().includes(q) || t.summary?.toLowerCase().includes(q));
     if (!matchesSearch) return false;
+    if (filterMode === 'today') return todaysTopicIds.has(t.id);
     if (filterMode === 'completed') return isCompleted(t.id);
     if (filterMode === 'pending') return !isCompleted(t.id);
     if (filterMode === 'bookmarked') return bookmarks.includes(t.id);
@@ -305,25 +310,33 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     <div>
       {/* ── Track Tabs ──────────────────────────────────── */}
       <div className="track-tabs" style={{ marginBottom: 20 }}>
-        {tracks.map((t, i) => (
-          <button
-            key={t.id}
-            className={`track-tab ${trackIdx === i ? 'active' : ''}`}
-            style={trackIdx === i ? { background: TRACK_GRADIENTS[i], color: '#fff' } : {}}
-            onClick={() => switchTrack(i)}
-          >
-            <span
-              className="track-icon"
-              style={{ background: trackIdx === i ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        {tracks.map((t, i) => {
+          const allModTopics = tracks[i]?.modules?.flatMap(m => m.topics) || [];
+          const activeTrackTopics = (planFilterActive && progress.studyPlan)
+            ? allModTopics.filter(tp => tp && curatedTopicIds.has(tp.id))
+            : allModTopics;
+          const doneCount = activeTrackTopics.filter(tp => tp && isCompleted(tp.id)).length;
+          const totalCount = activeTrackTopics.length;
+          return (
+            <button
+              key={t.id}
+              className={`track-tab ${trackIdx === i ? 'active' : ''}`}
+              style={trackIdx === i ? { background: TRACK_GRADIENTS[i], color: '#fff' } : {}}
+              onClick={() => switchTrack(i)}
             >
-              <TrackIcon trackId={t.id} size={15} />
-            </span>
-            {t.label}
-            <span style={{ fontSize: '0.7rem', opacity: 0.85 }}>
-              {(tracks[i]?.modules?.flatMap(m => m.topics) || []).filter(tp => tp && isCompleted(tp.id)).length || 0}/{t.totalTopics || 0}
-            </span>
-          </button>
-        ))}
+              <span
+                className="track-icon"
+                style={{ background: trackIdx === i ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <TrackIcon trackId={t.id} size={15} />
+              </span>
+              {t.label}
+              <span style={{ fontSize: '0.7rem', opacity: 0.85 }}>
+                {doneCount}/{totalCount}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Track Progress Bar ───────────────────────────── */}
@@ -354,7 +367,18 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
 
       <ReviewDashboard onSelectTopic={handleReviewSelect} />
       
-      <DailyPlanBanner onChangePlan={() => setShowPlanSelector(true)} />
+      <DailyPlanBanner 
+        onChangePlan={() => setShowPlanSelector(true)} 
+        onSelectTopic={(targetTopic) => {
+          const tIdx = tracks.findIndex(tr => tr.modules?.some(m => m.topics?.some(tp => tp.id === targetTopic.id)));
+          if (tIdx !== -1) {
+            setTrackIdx(tIdx);
+            const mod = tracks[tIdx].modules.find(m => m.topics?.some(tp => tp.id === targetTopic.id));
+            if (mod) setExpanded(prev => ({ ...prev, [mod.id]: true }));
+          }
+          selectTopic(targetTopic);
+        }}
+      />
 
       {/* ── Plan-Aware Filter Bar ── */}
       {progress.studyPlan && (
@@ -448,7 +472,7 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
 
             {/* Filter Tabs */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-              {['all', 'completed', 'bookmarked'].map(mode => (
+              {['all', 'today', 'pending', 'completed', 'bookmarked'].map(mode => (
                 <button
                   key={mode}
                   style={{
@@ -474,10 +498,14 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
             {activeTrack.modules.map(mod => {
               const filteredTopics = (mod.topics || []).filter(matchesFilter);
               const modTopics = mod.topics || [];
-              const modDone = modTopics.filter(t => t && isCompleted(t.id)).length;
-              const modAllDone = modTopics.length > 0 && modDone === modTopics.length;
+              const modCuratedTopics = (planFilterActive && progress.studyPlan)
+                ? modTopics.filter(t => t && curatedTopicIds.has(t.id))
+                : modTopics;
+              const modDone = modCuratedTopics.filter(t => t && isCompleted(t.id)).length;
+              const modTotal = modCuratedTopics.length;
+              const modAllDone = modTotal > 0 && modDone === modTotal;
 
-              if (filteredTopics.length === 0 && searchQuery) return null;
+              if (filteredTopics.length === 0 && (searchQuery || filterMode !== 'all')) return null;
 
               return (
                 <div key={mod.id} className="module-group">
@@ -492,8 +520,8 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
                     <span className="module-group-title" style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{mod.title}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span className={`module-count ${modAllDone ? 'done' : ''}`}>
-                        {modDone === modTopics.length && modTopics.length > 0 ? <Check size={9} /> : null}
-                        {modDone}/{modTopics.length}
+                        {modAllDone ? <Check size={9} /> : null}
+                        {modDone}/{modTotal}
                       </span>
                       {expanded[mod.id]
                         ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />

@@ -11,7 +11,7 @@ const iconMap = {
   Trophy: <Trophy size={24} color="#fbbf24" />
 };
 
-export default function DailyPlanBanner({ onChangePlan }) {
+export default function DailyPlanBanner({ onChangePlan, onSelectTopic }) {
   const { progress, getStudyDay, getTodaysTopics } = useAuth();
   
   if (!progress.studyPlan) return null;
@@ -79,23 +79,28 @@ export default function DailyPlanBanner({ onChangePlan }) {
           {todaysTopics.map(topic => {
             const isDone = progress.completedTopics.includes(topic.id);
             return (
-              <div 
+              <button 
                 key={topic.id}
+                onClick={() => onSelectTopic && onSelectTopic(topic)}
+                title="Click to jump to this topic"
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 6,
-                  padding: '4px 10px',
-                  background: isDone ? 'rgba(52, 211, 153, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                  border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
+                  padding: '6px 12px',
+                  background: isDone ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 255, 255, 0.07)',
+                  border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.35)' : 'rgba(245, 158, 11, 0.3)'}`,
                   borderRadius: 100,
                   fontSize: '0.75rem',
-                  color: isDone ? '#34d399' : 'var(--text-secondary)'
+                  fontWeight: 600,
+                  color: isDone ? '#34d399' : '#f1f5f9',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 {isDone ? <CheckCircle2 size={12} /> : <Circle size={12} />}
                 {topic.title}
-              </div>
+              </button>
             );
           })}
         </div>
