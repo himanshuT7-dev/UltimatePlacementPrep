@@ -368,6 +368,7 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
       <ReviewDashboard onSelectTopic={handleReviewSelect} />
       
       <DailyPlanBanner 
+        activeTrack={activeTrack}
         onChangePlan={() => setShowPlanSelector(true)} 
         onSelectTopic={(targetTopic) => {
           const tIdx = tracks.findIndex(tr => tr.modules?.some(m => m.topics?.some(tp => tp.id === targetTopic.id)));

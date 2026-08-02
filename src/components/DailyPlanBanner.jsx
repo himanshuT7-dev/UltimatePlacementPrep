@@ -11,15 +11,23 @@ const iconMap = {
   Trophy: <Trophy size={24} color="#fbbf24" />
 };
 
-export default function DailyPlanBanner({ onChangePlan, onSelectTopic }) {
+export default function DailyPlanBanner({ activeTrack, onChangePlan, onSelectTopic }) {
   const { progress, getStudyDay, getTodaysTopics } = useAuth();
   
   if (!progress.studyPlan) return null;
 
   const plan = STUDY_PLANS[progress.studyPlan];
   const dayNumber = getStudyDay();
-  const todaysTopics = getTodaysTopics();
+  const allTodaysTopics = getTodaysTopics();
   
+  // Filter today's topics for the currently selected track/language
+  const trackTopics = activeTrack 
+    ? allTodaysTopics.filter(t => activeTrack.modules?.some(m => m.topics?.some(tp => tp?.id === t.id)))
+    : allTodaysTopics;
+
+  const isFilteredByTrack = activeTrack && trackTopics.length > 0 && trackTopics.length < allTodaysTopics.length;
+  const todaysTopics = trackTopics.length > 0 ? trackTopics : allTodaysTopics;
+
   const completedToday = todaysTopics.filter(t => progress.completedTopics.includes(t.id));
   const completionPercent = todaysTopics.length ? Math.round((completedToday.length / todaysTopics.length) * 100) : 100;
 
@@ -40,7 +48,7 @@ export default function DailyPlanBanner({ onChangePlan, onSelectTopic }) {
               Day {dayNumber} of {plan.duration} · {plan.name}
             </h3>
             <span className="badge" style={{ background: 'rgba(255,255,255,0.1)' }}>
-              {todaysTopics.length} topics today
+              {todaysTopics.length} {isFilteredByTrack ? `${activeTrack.label} ` : ''}topics today
             </span>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
@@ -58,7 +66,7 @@ export default function DailyPlanBanner({ onChangePlan, onSelectTopic }) {
 
       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: 'var(--r-sm)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>
-          <span>Today's Progress</span>
+          <span>Today's Progress {isFilteredByTrack ? `(${activeTrack.label})` : ''}</span>
           <span style={{ color: completionPercent === 100 ? '#34d399' : 'var(--amber)' }}>
             {completedToday.length} / {todaysTopics.length} Completed
           </span>
