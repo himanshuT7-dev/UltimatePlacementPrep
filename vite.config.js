@@ -4,12 +4,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: true, // Listen on all network interfaces (0.0.0.0 & 127.0.0.1)
-    port: 3000,
+    port: 5173,
     strictPort: false,
     cors: true,
   },
   build: {
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         manualChunks: {
