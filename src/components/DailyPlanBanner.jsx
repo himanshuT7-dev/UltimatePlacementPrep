@@ -25,8 +25,8 @@ export default function DailyPlanBanner({ activeTrack, onChangePlan, onSelectTop
     ? allTodaysTopics.filter(t => activeTrack.modules?.some(m => m.topics?.some(tp => tp?.id === t.id)))
     : allTodaysTopics;
 
-  const isFilteredByTrack = activeTrack && trackTopics.length > 0 && trackTopics.length < allTodaysTopics.length;
-  const todaysTopics = trackTopics.length > 0 ? trackTopics : allTodaysTopics;
+  const isFilteredByTrack = activeTrack && trackTopics.length < allTodaysTopics.length;
+  const todaysTopics = activeTrack ? trackTopics : allTodaysTopics;
 
   const completedToday = todaysTopics.filter(t => progress.completedTopics.includes(t.id));
   const completionPercent = todaysTopics.length ? Math.round((completedToday.length / todaysTopics.length) * 100) : 100;
@@ -84,33 +84,39 @@ export default function DailyPlanBanner({ activeTrack, onChangePlan, onSelectTop
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {todaysTopics.map(topic => {
-            const isDone = progress.completedTopics.includes(topic.id);
-            return (
-              <button 
-                key={topic.id}
-                onClick={() => onSelectTopic && onSelectTopic(topic)}
-                title="Click to jump to this topic"
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 6,
-                  padding: '6px 12px',
-                  background: isDone ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 255, 255, 0.07)',
-                  border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.35)' : 'rgba(245, 158, 11, 0.3)'}`,
-                  borderRadius: 100,
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: isDone ? '#34d399' : '#f1f5f9',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {isDone ? <CheckCircle2 size={12} /> : <Circle size={12} />}
-                {topic.title}
-              </button>
-            );
-          })}
+          {todaysTopics.length > 0 ? (
+            todaysTopics.map(topic => {
+              const isDone = progress.completedTopics.includes(topic.id);
+              return (
+                <button 
+                  key={topic.id}
+                  onClick={() => onSelectTopic && onSelectTopic(topic)}
+                  title="Click to jump to this topic"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 6,
+                    padding: '6px 12px',
+                    background: isDone ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 255, 255, 0.07)',
+                    border: `1px solid ${isDone ? 'rgba(52, 211, 153, 0.35)' : 'rgba(245, 158, 11, 0.3)'}`,
+                    borderRadius: 100,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: isDone ? '#34d399' : '#f1f5f9',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {isDone ? <CheckCircle2 size={12} /> : <Circle size={12} />}
+                  {topic.title}
+                </button>
+              );
+            })
+          ) : (
+            <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '0.85rem', fontStyle: 'italic', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--r-sm)', width: '100%' }}>
+              No {activeTrack?.label} topics scheduled for today. Check your pending topics below or switch to another track to continue your sprint!
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -142,7 +142,7 @@ export default function LessonStepper({
     }
   };
 
-  const STEPS = ['Intuition', 'Visualize', 'Code', 'Quiz', 'Summary'];
+  const STEPS = ['Intuition', 'Visualize', 'Code', 'Quiz', 'Complete'];
 
   const quiz = topic?.quiz;
   const nativeText = (() => {
@@ -407,20 +407,30 @@ export default function LessonStepper({
               <h2 style={{ fontSize: '1.5rem', marginBottom: 16, color: '#fff' }}>Lesson Complete!</h2>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 32 }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Quiz Result</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: chosen === quiz?.correct ? 'var(--emerald)' : 'var(--rose)' }}>
-                    {chosen === quiz?.correct ? 'Correct' : 'Needs Review'}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Quiz Score</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: chosen === quiz?.correct ? 'var(--emerald)' : 'var(--amber)' }}>
+                    {chosen === quiz?.correct ? '100%' : '50%'}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>XP Earned</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--blue)' }}>
+                    +100 XP
                   </div>
                 </div>
               </div>
-              <div style={{ textAlign: 'left', background: 'rgba(0,0,0,0.2)', padding: 24, borderRadius: 'var(--r-md)', fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-                <strong>Full Summary:</strong><br/>
-                {topic.summary}
+              
+              <div style={{ background: 'rgba(52, 211, 153, 0.05)', border: '1px solid rgba(52, 211, 153, 0.2)', padding: '16px 20px', borderRadius: 'var(--r-md)', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, textAlign: 'left' }}>
+                <BookOpen size={20} color="var(--emerald)" />
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  <strong style={{ color: '#fff' }}>Mastery Added</strong><br/>
+                  This topic is now tracked in your spaced repetition schedule.
+                </div>
               </div>
               
               {hasNext && (
-                <button className="btn btn-amber" style={{ marginTop: 32, padding: '12px 24px', fontSize: '1rem', width: '100%' }} onClick={onNextTopic}>
-                  Next Topic <ArrowRight size={16} />
+                <button className="btn btn-amber" style={{ padding: '14px 28px', fontSize: '1.05rem', width: '100%', display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center' }} onClick={onNextTopic}>
+                  Continue to Next Topic <ArrowRight size={18} />
                 </button>
               )}
             </div>
