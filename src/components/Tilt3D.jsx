@@ -57,9 +57,18 @@ export default function Tilt3D({ children, className = '', style = {}, maxTilt =
     }
   }, [animate]);
 
+  const rectRef = useRef(null);
+
+  const handleMouseEnter = useCallback(() => {
+    if (cardRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
+  }, []);
+
   const handleMouseMove = useCallback((e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (!rectRef.current) rectRef.current = cardRef.current.getBoundingClientRect();
+    const rect = rectRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
@@ -73,6 +82,7 @@ export default function Tilt3D({ children, className = '', style = {}, maxTilt =
   }, [maxTilt, scale, startLoop]);
 
   const handleMouseLeave = useCallback(() => {
+    rectRef.current = null;
     targetRef.current.rotateX = 0;
     targetRef.current.rotateY = 0;
     targetRef.current.scale = 1;
@@ -90,6 +100,7 @@ export default function Tilt3D({ children, className = '', style = {}, maxTilt =
     <div
       ref={cardRef}
       className={className}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{

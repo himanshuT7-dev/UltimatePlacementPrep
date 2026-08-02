@@ -30,8 +30,9 @@
     radial-gradient(ellipse 80% 60% at 50% -5%, rgba(245,158,11,0.06) 0%, transparent 60%),
     radial-gradient(ellipse 50% 40% at 80% 100%, rgba(56,189,248,0.04) 0%, transparent 60%),
     radial-gradient(ellipse 40% 40% at 10% 80%, rgba(167,139,250,0.03) 0%, transparent 60%);
-  background-attachment: fixed;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transform: translateZ(0);
 }
 
 /* Slow-moving ambient metallic glow orbs */
@@ -347,6 +348,8 @@
   max-width: 100%;
   position: relative;
   z-index: 1;
+  content-visibility: auto;
+  contain-intrinsic-size: 500px;
 }
 
 /* Metallic section divider */
