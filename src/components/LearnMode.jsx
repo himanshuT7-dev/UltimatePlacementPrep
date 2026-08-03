@@ -51,6 +51,8 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     try { return JSON.parse(localStorage.getItem('upp_bookmarks_v1')) || []; } catch { return []; }
   });
 
+  const hasUserSelectedRef = useRef(false);
+
   /* Audio state */
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -89,63 +91,71 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     return new Set((getTodaysTopics() || []).map(t => t.id));
   }, [getTodaysTopics, progress.studyPlan]);
 
-  /* Initialize tracks synchronously */
-  useEffect(() => {
+  /* Auto-select recommended or initial topic reactively */
+  const autoSelectTopic = useCallback(() => {
     const ts = TRACKS;
     setTracks(ts);
-    if (ts.length > 0) {
-      let initTopic = null;
-      let initTrackIdx = 0;
-      let initModuleId = null;
+    if (!ts || ts.length === 0) return;
 
-      // 1. Try to find a pending daily task
-      try {
-        const dailyTopics = getTodaysTopics() || [];
-        for (const dt of dailyTopics) {
-          if (!progress.completedTopics.includes(dt.id)) {
-            const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === dt.id)));
-            if (tIdx !== -1) {
-              initTrackIdx = tIdx;
-              initTopic = dt;
-              initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === dt.id)).id;
-              break;
-            }
+    let initTopic = null;
+    let initTrackIdx = 0;
+    let initModuleId = null;
+
+    // 1. Try to find a pending daily task (first uncompleted task for today/overdue)
+    try {
+      const dailyTopics = getTodaysTopics() || [];
+      for (const dt of dailyTopics) {
+        if (!progress.completedTopics?.includes(dt.id)) {
+          const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === dt.id)));
+          if (tIdx !== -1) {
+            initTrackIdx = tIdx;
+            initTopic = dt;
+            initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === dt.id)).id;
+            break;
           }
         }
-      } catch (e) {}
+      }
+    } catch (e) {}
 
-      // 2. Fallback to last viewed
-      if (!initTopic) {
-        try {
-          const lastViewed = localStorage.getItem('upp_last_viewed_topic');
-          if (lastViewed) {
-            const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === lastViewed)));
-            if (tIdx !== -1) {
-              initTrackIdx = tIdx;
-              initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === lastViewed)).id;
-              initTopic = ts[tIdx].modules.find(m => m.id === initModuleId).topics.find(tp => tp && tp.id === lastViewed);
-            }
+    // 2. Fallback to last viewed topic in localStorage
+    if (!initTopic) {
+      try {
+        const lastViewed = localStorage.getItem('upp_last_viewed_topic');
+        if (lastViewed) {
+          const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === lastViewed)));
+          if (tIdx !== -1) {
+            initTrackIdx = tIdx;
+            initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === lastViewed)).id;
+            initTopic = ts[tIdx].modules.find(m => m.id === initModuleId).topics.find(tp => tp && tp.id === lastViewed);
           }
-        } catch {}
-      }
+        }
+      } catch {}
+    }
 
-      // 3. Fallback to very first topic
-      if (!initTopic) {
-        initTopic = ts[0]?.modules?.[0]?.topics?.[0];
-        initTrackIdx = 0;
-        initModuleId = ts[0]?.modules?.[0]?.id;
-      }
+    // 3. Fallback to very first topic of first track
+    if (!initTopic) {
+      initTopic = ts[0]?.modules?.[0]?.topics?.[0];
+      initTrackIdx = 0;
+      initModuleId = ts[0]?.modules?.[0]?.id;
+    }
 
+    if (initTopic) {
       setTrackIdx(initTrackIdx);
-      setTopic(initTopic || null);
-      setQuiz(initTopic?.quiz || null);
+      setTopic(initTopic);
+      setQuiz(initTopic.quiz || null);
       if (initModuleId) {
-        setExpanded({ [initModuleId]: true });
+        setExpanded(prev => ({ ...prev, [initModuleId]: true }));
       }
     }
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getTodaysTopics, progress.completedTopics, progress.studyPlan]);
+
+  /* Re-evaluate autoSelectTopic when progress or plan changes, unless user manually selected a topic */
+  useEffect(() => {
+    if (!hasUserSelectedRef.current) {
+      autoSelectTopic();
+    }
+  }, [autoSelectTopic]);
 
   /* Save bookmarks */
   useEffect(() => {
@@ -194,7 +204,10 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     if (window.innerWidth <= 768) setSidebarOpen(true);
   };
 
-  const selectTopic = (t) => {
+  const selectTopic = (t, isManual = true) => {
+    if (isManual) {
+      hasUserSelectedRef.current = true;
+    }
     stopAudio();
     setTopic(t);
     setQuiz(t?.quiz || null);
