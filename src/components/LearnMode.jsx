@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   BookOpen, Check, HelpCircle, Languages, Volume2, VolumeX,
   Sparkles, ChevronDown, ChevronRight, X as XIcon,
