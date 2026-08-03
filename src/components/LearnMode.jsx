@@ -94,15 +94,57 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     const ts = TRACKS;
     setTracks(ts);
     if (ts.length > 0) {
-      const firstTopic = ts[0]?.modules?.[0]?.topics?.[0];
-      setTopic(firstTopic || null);
-      setQuiz(firstTopic?.quiz || null);
-      if (ts[0]?.modules?.[0]?.id) {
-        setExpanded({ [ts[0].modules[0].id]: true });
+      let initTopic = null;
+      let initTrackIdx = 0;
+      let initModuleId = null;
+
+      // 1. Try to find a pending daily task
+      try {
+        const dailyTopics = getTodaysTopics() || [];
+        for (const dt of dailyTopics) {
+          if (!progress.completedTopics.includes(dt.id)) {
+            const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === dt.id)));
+            if (tIdx !== -1) {
+              initTrackIdx = tIdx;
+              initTopic = dt;
+              initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === dt.id)).id;
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+
+      // 2. Fallback to last viewed
+      if (!initTopic) {
+        try {
+          const lastViewed = localStorage.getItem('upp_last_viewed_topic');
+          if (lastViewed) {
+            const tIdx = ts.findIndex(trk => trk?.modules?.some(m => m?.topics?.some(tp => tp && tp.id === lastViewed)));
+            if (tIdx !== -1) {
+              initTrackIdx = tIdx;
+              initModuleId = ts[tIdx].modules.find(m => m.topics.some(tp => tp && tp.id === lastViewed)).id;
+              initTopic = ts[tIdx].modules.find(m => m.id === initModuleId).topics.find(tp => tp && tp.id === lastViewed);
+            }
+          }
+        } catch {}
       }
-      const total = ts.reduce((sum, t) => sum + (t?.totalTopics || t?.modules?.flatMap(m => m.topics)?.length || 0), 0);
+
+      // 3. Fallback to very first topic
+      if (!initTopic) {
+        initTopic = ts[0]?.modules?.[0]?.topics?.[0];
+        initTrackIdx = 0;
+        initModuleId = ts[0]?.modules?.[0]?.id;
+      }
+
+      setTrackIdx(initTrackIdx);
+      setTopic(initTopic || null);
+      setQuiz(initTopic?.quiz || null);
+      if (initModuleId) {
+        setExpanded({ [initModuleId]: true });
+      }
     }
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* Save bookmarks */
@@ -165,6 +207,10 @@ export default function LearnMode({ searchSelection, mobileMenuOpen, setMobileMe
     setShowFlashcard(false);
     setCardFlipped(false);
     if (window.innerWidth <= 768) setSidebarOpen(false);
+    
+    if (t?.id) {
+      try { localStorage.setItem('upp_last_viewed_topic', t.id); } catch {}
+    }
   };
 
   const toggleBookmark = (topicId) => {
