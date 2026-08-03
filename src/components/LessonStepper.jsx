@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import {
-  Check, CheckCircle2, X as XIcon, Languages, Volume2, VolumeX, Bookmark, ArrowRight, ArrowLeft, Mic, HelpCircle
+  Check, CheckCircle2, X as XIcon, Languages, Volume2, VolumeX, Bookmark, ArrowRight, ArrowLeft, Mic, HelpCircle, BookOpen
 } from 'lucide-react';
 
 const LANGS = ['English','Hinglish','Hindi','Tamil','Telugu','Kannada','Marathi','Bengali','Gujarati'];
@@ -124,7 +124,7 @@ export default function LessonStepper({
     setChosen(null);
     setSubmitted(false);
     stopSpeech();
-  }, [topic]);
+  }, [topic?.id]);
 
   const toggleAudio = (text) => {
     if (isSpeaking) {
@@ -312,7 +312,7 @@ export default function LessonStepper({
         {activeStep === 2 && (
           <div className="anim-fade" style={{ flex: 1 }}>
             <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
-              <InteractiveVisualizer topic={topic} />
+              <InteractiveVisualizer topic={topic} nativeText={nativeText} />
             </Suspense>
           </div>
         )}

@@ -5,7 +5,7 @@ import JoinVisualizer from './JoinVisualizer';
 import DSAVisualizer from './DSAVisualizer';
 import ConceptFlowVisualizer from './ConceptFlowVisualizer';
 
-export default function InteractiveVisualizer({ topic }) {
+export default function InteractiveVisualizer({ topic, nativeText }) {
   if (!topic) return null;
 
   // Custom visualizer attached to topic
@@ -46,7 +46,7 @@ export default function InteractiveVisualizer({ topic }) {
       <h3 style={{ marginBottom: 16, color: 'var(--amber)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
         <Zap size={18} /> Interactive Concept Flow & Execution Breakdown
       </h3>
-      <ConceptFlowVisualizer topic={topic} />
+      <ConceptFlowVisualizer topic={topic} nativeText={nativeText} />
     </div>
   );
 }

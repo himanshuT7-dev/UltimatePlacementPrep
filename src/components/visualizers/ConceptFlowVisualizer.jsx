@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, Sparkles, Code2, ArrowRight } from 'lucide-react';
 
-export default function ConceptFlowVisualizer({ topic }) {
+export default function ConceptFlowVisualizer({ topic, nativeText }) {
   const [step, setStep] = useState(0);
 
   if (!topic) return null;
@@ -23,22 +23,34 @@ export default function ConceptFlowVisualizer({ topic }) {
       badge: 'badge-sky',
       codeSnippet: codeLines[0] || null,
       type: 'concept'
-    },
-    {
+    }
+  ];
+
+  if (nativeText && nativeText !== topic.summary) {
+    steps.push({
+      title: `2. Simplified Breakdown`,
+      text: nativeText,
+      badge: 'badge-amber',
+      codeSnippet: codeLines[1] || codeLines[0] || null,
+      type: 'mechanics'
+    });
+  } else {
+    steps.push({
       title: `2. Deep Mechanics & Behavior`,
       text: summarySentences[1] || summarySentences[0] || 'Understand how the runtime executes this logic step-by-step.',
       badge: 'badge-amber',
       codeSnippet: codeLines[1] || codeLines[0] || null,
       type: 'mechanics'
-    },
-    {
-      title: `3. Interview & Placement Gotchas`,
-      text: summarySentences[2] || 'Always remember performance implications, edge cases, and time/space complexity during interview discussions.',
-      badge: 'badge-emerald',
-      codeSnippet: codeLines[2] || codeLines[1] || null,
-      type: 'interview'
-    }
-  ];
+    });
+  }
+
+  steps.push({
+    title: `3. Interview & Placement Gotchas`,
+    text: summarySentences[2] || 'Always remember performance implications, edge cases, and time/space complexity during interview discussions.',
+    badge: 'badge-emerald',
+    codeSnippet: codeLines[2] || codeLines[1] || null,
+    type: 'interview'
+  });
 
   if (summarySentences.length > 3) {
     steps.push({
