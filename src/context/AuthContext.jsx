@@ -28,6 +28,32 @@ const blankProgress = () => ({
   planStartDate:        null,
 });
 
+const getProgressKey = (s) => `${PROGRESS_KEY}_${s?.email || 'guest'}`;
+
+const loadProgressFromStorage = (s) => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(getProgressKey(s)));
+    if (stored) {
+      const bp = blankProgress();
+      return {
+        ...bp,
+        ...stored,
+        completedTopics: Array.isArray(stored.completedTopics) ? stored.completedTopics : bp.completedTopics,
+        mistakeLog: Array.isArray(stored.mistakeLog) ? stored.mistakeLog : bp.mistakeLog,
+        reviews: stored.reviews || bp.reviews,
+        dailyActivity: stored.dailyActivity || bp.dailyActivity,
+        quizHistory: Array.isArray(stored.quizHistory) ? stored.quizHistory : bp.quizHistory,
+        quizScores: stored.quizScores || bp.quizScores,
+        xp: stored.xp || bp.xp,
+        streakDays: stored.streakDays !== undefined ? stored.streakDays : bp.streakDays,
+        lastActiveDate: stored.lastActiveDate || bp.lastActiveDate,
+      };
+    }
+    return blankProgress();
+  }
+  catch { return blankProgress(); }
+};
+
 export const AuthProvider = ({ children }) => {
   const { showToast } = useToast();
 
@@ -38,38 +64,16 @@ export const AuthProvider = ({ children }) => {
   });
 
   /* ── Progress ─────────────────────────────────────────── */
-  const progressKey = useCallback((s) => `${PROGRESS_KEY}_${s?.email || 'guest'}`, []);
-
-  const loadProgress = useCallback((s) => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(progressKey(s)));
-      if (stored) {
-        const bp = blankProgress();
-        return {
-          ...bp,
-          ...stored,
-          completedTopics: Array.isArray(stored.completedTopics) ? stored.completedTopics : bp.completedTopics,
-          mistakeLog: Array.isArray(stored.mistakeLog) ? stored.mistakeLog : bp.mistakeLog,
-          reviews: stored.reviews || bp.reviews,
-          dailyActivity: stored.dailyActivity || bp.dailyActivity,
-          quizHistory: Array.isArray(stored.quizHistory) ? stored.quizHistory : bp.quizHistory,
-          quizScores: stored.quizScores || bp.quizScores,
-          xp: stored.xp || bp.xp,
-          streakDays: stored.streakDays !== undefined ? stored.streakDays : bp.streakDays,
-          lastActiveDate: stored.lastActiveDate || bp.lastActiveDate,
-        };
-      }
-      return blankProgress();
-    }
-    catch { return blankProgress(); }
-  }, [progressKey]);
+  const progressKey = useCallback((s) => getProgressKey(s), []);
+  const loadProgress = useCallback((s) => loadProgressFromStorage(s), []);
 
   const [progress, setProgress] = useState(() => {
-    const bp = blankProgress();
+    // If session is already cached, load progress synchronously!
+    const initProg = session ? loadProgressFromStorage(session) : blankProgress();
     // Immediately restore studyPlan from localStorage to prevent selector flash
     const savedPlan = localStorage.getItem('upp_study_plan');
-    if (savedPlan) bp.studyPlan = savedPlan;
-    return bp;
+    if (savedPlan && !initProg.studyPlan) initProg.studyPlan = savedPlan;
+    return initProg;
   });
 
   // Refs mirror the latest state so side effects (toasts/confetti/sync) and the
