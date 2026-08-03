@@ -102,6 +102,7 @@ export const AuthProvider = ({ children }) => {
           if (meRes.ok && data.user) {
             sessionRef.current = data.user;
             setSession(data.user);
+            localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
             const progData = await progRes.json();
             if (progRes.ok && progData.progress) {
               const merged = { ...blankProgress(), ...progData.progress };
@@ -197,6 +198,7 @@ export const AuthProvider = ({ children }) => {
 
   /* ── Auth actions ─────────────────────────────────────── */
   const login = useCallback(async (user) => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     sessionRef.current = user;
     setSession(user);
     showToast(`Welcome back, ${user.name}!`, 'success');
