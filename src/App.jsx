@@ -153,7 +153,17 @@ function Dashboard() {
    Root — gate between Landing and Dashboard
 ───────────────────────────────────────────────────────── */
 function Root() {
-  const { isLoggedIn, login } = useAuth();
+  const { isLoggedIn, login, initDone } = useAuth();
+
+  // If the user has a token but their session isn't fully cached/verified yet,
+  // show a seamless loading state instead of flashing the Landing Page.
+  if (!initDone && !isLoggedIn && localStorage.getItem('upp_auth_token')) {
+    return (
+      <div className="loading-pulse" style={{ padding: '60px 0', justifyContent: 'center', height: '100vh' }}>
+        <div className="spinner" />Loading workspace...
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return (
